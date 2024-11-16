@@ -22,3 +22,14 @@ class StockInfoFetcher(BaseFetcher):
         except Exception as e:
             print(f"Error fetching data: {e}")
             return pd.DataFrame()
+
+    def __getitem__(self, key):
+        data = self.fetch_and_cache_data()
+        try:
+            value = data.loc[data['item'] == key, 'value']
+            if not value.empty:
+                return value.values[0]
+            else:
+                raise KeyError(f"Key '{key}' not found in DataFrame")
+        except KeyError:
+            raise KeyError(f"Key '{key}' not found in DataFrame")

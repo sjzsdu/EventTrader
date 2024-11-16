@@ -3,6 +3,7 @@ from .base_fetcher import BaseFetcher
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
+from event_trader.trading_time_checker import TradingTimeChecker
 if TYPE_CHECKING:
     from event_trader.stock_data import StockData
 class StockHistFetcher(BaseFetcher):
@@ -29,8 +30,3 @@ class StockHistFetcher(BaseFetcher):
             print(f"Error fetching data: {e}")
             return pd.DataFrame()
         
-    def is_data_up_to_date(self, data):
-        if data.empty:
-            return False
-        last_data_date = pd.to_datetime(data['日期'].iloc[-1])
-        return last_data_date >= pd.to_datetime(self.stock_data.end_date)
