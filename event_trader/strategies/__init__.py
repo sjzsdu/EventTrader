@@ -1,2 +1,3 @@
 from .base_strategy import BaseStrategy
 from .simple_moving_average_strategy import SimpleMovingAverageStrategy
+from .one_moving_average_strategy import OneMovingAverageStrategy

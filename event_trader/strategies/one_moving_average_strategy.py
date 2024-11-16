@@ -9,18 +9,17 @@ import matplotlib.pyplot as plt
 
 PRICE_COL = "收盘"
 DEFAULT_PARAMS = {
-    'short_window': 5,
-    'long_window': 20,
+    'window': 5
 }
 
-class SimpleMovingAverageStrategy(BaseStrategy):
+class OneMovingAverageStrategy(BaseStrategy):
     """
-    计算两个不同周期的移动平均值。
-    当短周期的移动平均线高于长周期的移动平均线时，买入；
-    当短周期的移动平均线低于长周期的移动平均线时，卖出。
+    计算一个周期的移动平均值。
+    当价格高于移动平均线时，买入；
+    当价格低于移动平均线时，卖出。
     """
     def __init__(self, stock_data: StockData, params = None):
-        super().__init__(stock_data, 'simple_moving_average')
+        super().__init__(stock_data, 'one_moving_average')
         if params is not None:
             self.default_params = { **DEFAULT_PARAMS, **params }
         else:
@@ -30,16 +29,14 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         
 
     def calculate_factors(self):
-        short_window= self.parameters['short_window']
-        long_window= self.parameters['long_window']
-        self.data['short_mavg'] = self.data[PRICE_COL].rolling(window=short_window).mean()
-        self.data['long_mavg'] = self.data[PRICE_COL].rolling(window=long_window).mean()
+        window = self.parameters['window']
+        self.data['moving_avg'] = self.data[PRICE_COL].rolling(window=window).mean()
 
     def buy_signal(self, row) -> bool:
-        return row['short_mavg'] > row['long_mavg']
+        return row[PRICE_COL] > row['moving_avg']
 
     def sell_signal(self, row) -> bool:
-        return row['short_mavg'] < row['long_mavg']
+        return row[PRICE_COL] < row['moving_avg']
 
     def calculate_profit(self) -> float:
         initial_investment = 1000000
@@ -47,7 +44,7 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         shares = 0
 
         for index, row in self.data.iterrows():
-            if pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
+            if pd.isna(row['moving_avg']):
                 continue
 
             current_price = row[PRICE_COL]
@@ -67,20 +64,18 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         profit = (cash - initial_investment) / initial_investment * 100
         return profit
 
-    def optimize_parameters(self, short_range=(5, 20), long_range=(25, 80)):
+    def optimize_parameters(self, window_range=(5, 50)):
         best_profit = -np.inf
-        best_params = (self.short_window, self.long_window)
-        for short in range(*short_range):
-            for long in range(*long_range):
-                self.short_window = short
-                self.long_window = long
-                self.calculate_factors()  # 更新因子计算
-                profit = self.calculate_profit()
-                if profit > best_profit:
-                    best_profit = profit
-                    best_params = (short, long)
-        self.short_window, self.long_window = best_params
-        print(f"Optimized parameters: Short window = {self.short_window}, Long window = {self.long_window}, Profit = {best_profit}")
+        best_window = self.parameters['window']
+        for window in range(*window_range):
+            self.parameters['window'] = window
+            self.calculate_factors()
+            profit = self.calculate_profit()
+            if profit > best_profit:
+                best_profit = profit
+                best_window = window
+        self.parameters['window'] = best_window
+        print(f"Optimized parameter: Window = {self.parameters['window']}, Profit = {best_profit}")
         self.save_parameters()
         return self
         
@@ -100,12 +95,10 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         # Prepare a list for addplot
         add_plots = []
         
-        # Calculate and add moving averages for short_window and long_window
-        stock_data_copy['Short_MA'] = stock_data_copy['Close'].rolling(window=self.short_window).mean()
-        stock_data_copy['Long_MA'] = stock_data_copy['Close'].rolling(window=self.long_window).mean()
+        # Calculate and add moving averages for the specified window
+        stock_data_copy['Moving_Avg'] = stock_data_copy['Close'].rolling(window=self.parameters['window']).mean()
         
-        add_plots.append(mpf.make_addplot(stock_data_copy['Short_MA'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'))
-        add_plots.append(mpf.make_addplot(stock_data_copy['Long_MA'], width=0.8, color='orange', label=f'{self.long_window}-Day MA'))
+        add_plots.append(mpf.make_addplot(stock_data_copy['Moving_Avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA'))
         
         # Define the style with red for up and green for down
         mc = mpf.make_marketcolors(up='red', down='green', inherit=True)
@@ -115,9 +108,3 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         mpf.plot(stock_data_copy, type='candle', volume=True, 
                 title=f'{self.stock_data.code} Candle Figure', ylabel='Price',
                 addplot=add_plots, style=s, ylabel_lower='Volume', figsize=figsize)
-
-
-        
-    
-
-
