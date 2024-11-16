@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "event-trader"
+version = "0.1.0"
+description = ""
+authors = ["sunjuzhong <129019668+sunjuzhong@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+akshare = "^1.15.21"
+pandas = "^2.2.3"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
