@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 import pandas as pd
+from event_trader.stock_data import StockData
 
-class TradingStrategy(ABC):
-    def __init__(self, stock_data: pd.DataFrame):
+class BaseStrategy(ABC):
+    def __init__(self, stock_data: StockData):
         self.stock_data = stock_data
 
     @abstractmethod

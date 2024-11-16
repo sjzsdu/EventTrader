@@ -9,6 +9,8 @@ readme = "README.md"
 python = "^3.12"
 akshare = "^1.15.21"
 pandas = "^2.2.3"
+mplfinance = "^0.12.10b0"
+matplotlib = "^3.9.2"
 
 
 [tool.poetry.group.dev.dependencies]

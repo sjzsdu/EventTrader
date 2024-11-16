@@ -2,4 +2,5 @@
 .pbynb_checkpoints
 **/*.ipynb
 cache
+params
 **/__pycache__/*.*
