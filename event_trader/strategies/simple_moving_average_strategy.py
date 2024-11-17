@@ -4,13 +4,16 @@ import numpy as np
 from .base_strategy import BaseStrategy
 from event_trader.stock_data import StockData
 import mplfinance as mpf
-import matplotlib.pyplot as plt
+from event_trader.config import PRICE_COL
 
-
-PRICE_COL = "收盘"
 DEFAULT_PARAMS = {
     'short_window': 5,
     'long_window': 20,
+}
+
+DEFAULT_PARAMS_RANGE = {
+    'short_window': (2, 20),
+    'long_window': (25, 80),
 }
 
 class SimpleMovingAverageStrategy(BaseStrategy):
@@ -19,15 +22,13 @@ class SimpleMovingAverageStrategy(BaseStrategy):
     当短周期的移动平均线高于长周期的移动平均线时，买入；
     当短周期的移动平均线低于长周期的移动平均线时，卖出。
     """
-    def __init__(self, stock_data: StockData, params = None):
-        super().__init__(stock_data, 'simple_moving_average')
-        if params is not None:
-            self.default_params = { **DEFAULT_PARAMS, **params }
-        else:
-            self.default_params = DEFAULT_PARAMS
-        self.load_parameters(self.default_params)
-        self.data: pd.DataFrame = stock_data.hist.copy()
-        
+    def __init__(self, stock_data: StockData, params = None, params_range=None):
+        _params = params if params is not None else DEFAULT_PARAMS
+        _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
+        super().__init__(stock_data, 'simple_moving_average', _params, _params_range)
+    
+    def load_data(self):
+        return self.stock_data.hist.copy()
 
     def calculate_factors(self):
         short_window= self.parameters['short_window']
@@ -36,53 +37,14 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         self.data['long_mavg'] = self.data[PRICE_COL].rolling(window=long_window).mean()
 
     def buy_signal(self, row) -> bool:
+        if pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
+             return False
         return row['short_mavg'] > row['long_mavg']
 
     def sell_signal(self, row) -> bool:
+        if pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
+             return False
         return row['short_mavg'] < row['long_mavg']
-
-    def calculate_profit(self) -> float:
-        initial_investment = 1000000
-        cash = initial_investment
-        shares = 0
-
-        for index, row in self.data.iterrows():
-            if pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
-                continue
-
-            current_price = row[PRICE_COL]
-
-            if self.buy_signal(row) and cash > 0:
-                max_shares_to_buy = cash // current_price
-                shares_to_buy = (max_shares_to_buy // 100) * 100
-                shares += shares_to_buy
-                cash -= shares_to_buy * current_price
-            elif self.sell_signal(row) and shares > 0:
-                cash += shares * current_price
-                shares = 0
-
-        if shares > 0:
-            final_price = self.data[PRICE_COL].iloc[-1]
-            cash += shares * final_price
-        profit = (cash - initial_investment) / initial_investment * 100
-        return profit
-
-    def optimize_parameters(self, short_range=(5, 20), long_range=(25, 80)):
-        best_profit = -np.inf
-        best_params = (self.short_window, self.long_window)
-        for short in range(*short_range):
-            for long in range(*long_range):
-                self.short_window = short
-                self.long_window = long
-                self.calculate_factors()  # 更新因子计算
-                profit = self.calculate_profit()
-                if profit > best_profit:
-                    best_profit = profit
-                    best_params = (short, long)
-        self.short_window, self.long_window = best_params
-        print(f"Optimized parameters: Short window = {self.short_window}, Long window = {self.long_window}, Profit = {best_profit}")
-        self.save_parameters()
-        return self
         
     def show(self):
         stock_data_copy = self.data.copy()
@@ -115,9 +77,5 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         mpf.plot(stock_data_copy, type='candle', volume=True, 
                 title=f'{self.stock_data.code} Candle Figure', ylabel='Price',
                 addplot=add_plots, style=s, ylabel_lower='Volume', figsize=figsize)
-
-
-        
-    
 
 
