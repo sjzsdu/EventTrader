@@ -72,6 +72,7 @@ class TraditionalBollStrategy(BaseStrategy):
 
         
     def show(self, **kwargs):
+        self.calculate_factors()
         stock_data_copy = self.data.copy()
         add_plots = []
         add_plots.append(mpf.make_addplot(stock_data_copy['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA'))
