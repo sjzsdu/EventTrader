@@ -47,35 +47,13 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         return row['short_mavg'] < row['long_mavg']
         
     def show(self):
+        self.calculate_factors()
         stock_data_copy = self.data.copy()
-        stock_data_copy.rename(columns={
-            '开盘': 'Open',
-            '收盘': 'Close',
-            '最高': 'High',
-            '最低': 'Low',
-            '成交量': 'Volume'
-        }, inplace=True)
-        
-        # Convert index to datetime
-        stock_data_copy.index = pd.to_datetime(stock_data_copy.index)
-        
-        # Prepare a list for addplot
         add_plots = []
-        
-        # Calculate and add moving averages for short_window and long_window
-        stock_data_copy['Short_MA'] = stock_data_copy['Close'].rolling(window=self.short_window).mean()
-        stock_data_copy['Long_MA'] = stock_data_copy['Close'].rolling(window=self.long_window).mean()
-        
-        add_plots.append(mpf.make_addplot(stock_data_copy['Short_MA'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'))
-        add_plots.append(mpf.make_addplot(stock_data_copy['Long_MA'], width=0.8, color='orange', label=f'{self.long_window}-Day MA'))
-        
-        # Define the style with red for up and green for down
-        mc = mpf.make_marketcolors(up='red', down='green', inherit=True)
-        s = mpf.make_mpf_style(marketcolors=mc)
-        figsize = (16, 8)  # (宽度, 高度)
-        # Plot with moving averages
-        mpf.plot(stock_data_copy, type='candle', volume=True, 
-                title=f'{self.stock_data.code} Candle Figure', ylabel='Price',
-                addplot=add_plots, style=s, ylabel_lower='Volume', figsize=figsize)
+
+        add_plots.append(mpf.make_addplot(stock_data_copy['short_mavg'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'))
+        add_plots.append(mpf.make_addplot(stock_data_copy['long_mavg'], width=0.8, color='orange', label=f'{self.long_window}-Day MA'))
+        self.plot_basic(add_plots = add_plots, title=f'{self.parameters.get("stock_code", "Stock")} Candle Figure')
+
 
 

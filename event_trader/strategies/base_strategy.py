@@ -3,7 +3,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from event_trader.demo_account import DemoAccount
 import numpy as np
-
+import mplfinance as mpf
 class BaseStrategy(ABC):
     def __init__(self, stock_data, sub_path, params, params_range):
         self.stock_data = stock_data
@@ -84,6 +84,40 @@ class BaseStrategy(ABC):
         print(f"Optimized parameters: {self.parameters}, Profit = {best_profit}")
         self.save_parameters()
         return self
+    
+    def plot_basic(self, add_plots=None, title='Candle Figure', volume_width=0.5):
+        stock_data_copy = self.data.copy()
+        stock_data_copy.rename(columns={
+            '开盘': 'Open',
+            '收盘': 'Close',
+            '最高': 'High',
+            '最低': 'Low',
+            '成交量': 'Volume'
+        }, inplace=True)
+        
+        # Convert index to datetime
+        stock_data_copy.index = pd.to_datetime(stock_data_copy.index)
+        
+        # Define the style with red for up and green for down
+        mc = mpf.make_marketcolors(up='red', down='green', inherit=True)
+        s = mpf.make_mpf_style(marketcolors=mc, base_mpf_style='yahoo')
+        figsize = (16, 8)
+        # Plot with mplfinance, return the figure and axes
+        fig, axes = mpf.plot(stock_data_copy, type='candle', volume=True, 
+                            title=title, ylabel='Price', style=s, ylabel_lower='Volume', 
+                            figsize=figsize, addplot=add_plots, returnfig=True)
+        
+        # Customizing the volume bars width and color
+        volume_ax = axes[2]  # Volume is usually plotted on the third axis
+        for idx, bar in enumerate(volume_ax.patches):
+            bar.set_width(volume_width)  # Set custom width for each volume bar
+            # Match the color of volume bars with the candle colors
+            if stock_data_copy['Close'].iloc[idx] > stock_data_copy['Open'].iloc[idx]:
+                bar.set_color('red')  # Up color
+            else:
+                bar.set_color('green')  # Down color
+
+        return fig, axes
 
 
     def notify(self, message: str):
