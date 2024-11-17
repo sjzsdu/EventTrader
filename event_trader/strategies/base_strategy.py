@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from abc import ABC, abstractmethod
 from event_trader.demo_account import DemoAccount
-from event_trader.config import DATE_COL
+from event_trader.config import DATE_COL, SYMBOL_COL
 import numpy as np
 import mplfinance as mpf
 
@@ -49,15 +49,21 @@ class BaseStrategy(ABC):
         df.to_csv(self.params_path, index=False)
 
     def calculate_profit(self) -> DemoAccount:
-        account = DemoAccount()
+        account = DemoAccount(initial_cash=1000000)  # 初始化DemoAccount实例
         for index, row in self.data.iterrows():
             if self.buy_signal(row):
-                account.buy(row, index)
+                account.buy(row, index, position=1.0)  # 假设默认全仓买入
             elif self.sell_signal(row):
-                account.sell(row, index)
+                account.sell(row, index, position=1.0)  # 假设默认全仓卖出
 
-        if account.shares > 0:
-            account.sell(self.data.iloc[-1], len(self.data) - 1)
+        # 检查是否还有未卖出的股票
+        for symbol, shares in account.holdings.items():
+            if shares > 0:
+                # 在最后一个数据行处卖出所有持有的股票
+                last_index = len(self.data) - 1
+                last_row = self.data.iloc[last_index]
+                if last_row.get(SYMBOL_COL) == symbol:  # 确保符号匹配
+                    account.sell(last_row, last_index, position=1.0)
 
         return account
     
@@ -97,7 +103,7 @@ class BaseStrategy(ABC):
         self.save_parameters()
         return self
     
-    def plot_basic(self, add_plots=None, title=None, volume_width=0.5):
+    def plot_basic(self, add_plots=None, title=None, volume_width=0.5, **kwargs):
         if title is None:
             title = f"{self.stock_data.code} {self.__class__.__name__} Figure"
         if add_plots is None:
@@ -134,64 +140,72 @@ class BaseStrategy(ABC):
             else:
                 bar.set_color('green')  # Down color
         print(f"Optimized parameters: {self.parameters}, Profit = {self.account.get_profit()}")
-        return self.after_plot(fig, axes)
+        return self.after_plot(fig, axes, **kwargs)
     
-    def after_plot(self, fig, axes):
+    def after_plot(self, fig, axes, **kwargs):
         trades = self.account.transactions
         ax = axes[0]
-        
+        volume_ax = axes[1]  # Reference to the volume axis
+        ylim = ax.get_ylim()
         # Plot each trade with improved layout
-        for trade in trades:
-            date = trade['index']
-            offset = 2  # Adjust the offset for better positioning
-            text_offset = 3  # Extra offset for the text
-            
-            if trade['type'] == 'buy':
-                ax.annotate(
-                    f"Buy\nPrice: {trade['price']}\nShares: {trade['shares']}\nFee: {trade['fee']}",
-                    xy=(date, trade['price']),
-                    xytext=(date, trade['price'] + offset),
-                    arrowprops=dict(facecolor='green', arrowstyle='->', lw=1),
-                    fontsize=8,
-                    color='green',
-                    horizontalalignment='left',
-                    verticalalignment='bottom'
-                )
-            elif trade['type'] == 'sell':
-                ax.annotate(
-                    f"Sell\nPrice: {trade['price']}\nShares: {trade['shares']}\nFee: {trade['fee']}",
-                    xy=(date, trade['price']),
-                    xytext=(date, trade['price'] - offset - text_offset),
-                    arrowprops=dict(facecolor='red', arrowstyle='->', lw=1),
-                    fontsize=8,
-                    color='red',
-                    horizontalalignment='right',
-                    verticalalignment='top'
-                )
+        if 'transaction' in kwargs and kwargs['transaction']:
+            for trade in trades:
+                date = trade['index']
+                price_offset = trade['price'] * 0.1
+                if trade['type'] == 'buy':
+                    ax.annotate(
+                        f"B",
+                        xy=(date, trade['price']),
+                        xytext=(date, trade['price'] + price_offset),
+                        arrowprops=dict(edgecolor='green', arrowstyle='->', lw=1),
+                        fontsize=12,
+                        color='green',
+                        horizontalalignment='left',
+                        verticalalignment='bottom',
+                        zorder=5  # Ensure text is above other elements
+                    )
+                elif trade['type'] == 'sell':
+                    ax.annotate(
+                        f"S",
+                        xy=(date, trade['price']),
+                        xytext=(date, trade['price'] - price_offset),
+                        arrowprops=dict(edgecolor='red', arrowstyle='->', lw=1),
+                        fontsize=12,
+                        color='red',
+                        horizontalalignment='right',
+                        verticalalignment='top',
+                        zorder=5  # Ensure text is above other elements
+                    )
 
         # Draw lines between buy and sell points
-        for i in range(0, len(trades) - 1, 2):
-            buy_trade = trades[i]
-            sell_trade = trades[i + 1]
-            profit = (sell_trade['price'] - buy_trade['price']) * buy_trade['shares'] - (buy_trade['fee'] + sell_trade['fee'])
-            
-            # Plot dashed line between buy and sell
-            ax.plot(
-                [buy_trade['index'], sell_trade['index']],
-                [buy_trade['price'], sell_trade['price']],
-                color='blue', linestyle='--', linewidth=1
-            )
-            
-            # Annotate profit in the middle of the line
-            ax.text(
-                (buy_trade['index'] + (sell_trade['index'] - buy_trade['index']) / 2),
-                (buy_trade['price'] + sell_trade['price']) / 2 + text_offset,
-                f"Profit: {profit:.2f}",
-                fontsize=8,
-                color='blue',
-                horizontalalignment='center',
-                verticalalignment='center'
-            )
+        if 'profit' in kwargs and kwargs['profit']:
+            for i in range(0, len(trades) - 1, 2):
+                buy_trade = trades[i]
+                sell_trade = trades[i + 1]
+                price_offset = (buy_trade['price'] + buy_trade['price'])  * 0.1
+                profit = (sell_trade['price'] - buy_trade['price']) * buy_trade['shares'] - (buy_trade['fee'] + sell_trade['fee'])
+                
+                # Plot dashed line between buy and sell
+                ax.plot(
+                    [buy_trade['index'], sell_trade['index']],
+                    [buy_trade['price'], sell_trade['price']],
+                    color='blue', linestyle='--', linewidth=1, zorder=3
+                )
+                
+                # Annotate profit in the middle of the line
+                ax.text(
+                    (buy_trade['index'] + (sell_trade['index'] - buy_trade['index']) / 2),
+                    max(buy_trade['price'], sell_trade['price']) + price_offset,
+                    f"Profit: {profit:.2f}",
+                    fontsize=8,
+                    color='blue',
+                    horizontalalignment='center',
+                    verticalalignment='bottom',
+                    zorder=5
+                )
+        
+        # Set limits to ensure annotations stay above the volume chart
+        # ax.set_ylim(ylim[0], ylim[1] + (ylim[1] - ylim[0]) * 0.1)
         
         return fig, axes
 

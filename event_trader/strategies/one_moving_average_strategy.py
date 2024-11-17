@@ -44,8 +44,8 @@ class OneMovingAverageStrategy(BaseStrategy):
         return row[PRICE_COL] < row['moving_avg']
 
         
-    def show(self):
+    def show(self, **kwargs):
         stock_data_copy = self.data.copy()
         add_plots = []
         add_plots.append(mpf.make_addplot(stock_data_copy['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA'))
-        self.plot_basic(add_plots = add_plots, title=f'{self.parameters.get("stock_code", "Stock")} Candle Figure')
+        self.plot_basic(add_plots = add_plots, **kwargs)

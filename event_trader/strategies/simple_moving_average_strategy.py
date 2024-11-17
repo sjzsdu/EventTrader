@@ -44,13 +44,13 @@ class SimpleMovingAverageStrategy(BaseStrategy):
              return False
         return row['short_mavg'] < row['long_mavg']
         
-    def show(self):
+    def show(self, **kwargs):
         stock_data_copy = self.data.copy()
         add_plots = []
 
         add_plots.append(mpf.make_addplot(stock_data_copy['short_mavg'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'))
         add_plots.append(mpf.make_addplot(stock_data_copy['long_mavg'], width=0.8, color='orange', label=f'{self.long_window}-Day MA'))
-        self.plot_basic(add_plots = add_plots)
+        self.plot_basic(add_plots = add_plots, **kwargs)
 
 
 
