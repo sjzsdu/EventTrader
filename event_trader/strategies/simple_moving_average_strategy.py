@@ -23,7 +23,7 @@ class SimpleMovingAverageStrategy(BaseStrategy):
     def __init__(self, stock_data: StockData, params = None, params_range=None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'simple_moving_average', _params, _params_range)
+        super().__init__(stock_data, 'simple_moving_average', _params, _params_range, None)
     
     def load_data(self):
         return self.stock_data.hist.copy()

@@ -7,12 +7,13 @@ import numpy as np
 import mplfinance as mpf
 
 class BaseStrategy(ABC):
-    def __init__(self, stock_data, sub_path, params, params_range):
+    def __init__(self, stock_data, sub_path, params, params_range, params_step):
         self.stock_data = stock_data
         self.data = self.load_data()
         self.params_path = os.path.join('params', sub_path, f'{self.stock_data.code}.csv')
         self.params = params
         self.params_range = params_range
+        self.params_step = params_step
         
         self.parameters = {}
         self.load_parameters(self.params)
@@ -67,19 +68,29 @@ class BaseStrategy(ABC):
 
         return account
     
-    def optimize_parameters(self, params_range=None, forceOptimize=False):
+    def optimize_parameters(self, params_range=None, params_step=None, forceOptimize=False):
         if (self.check_params_exists() and not forceOptimize):
             self.account = self.calculate_profit()
             return self
+        
         if params_range is not None:
             self.params_range = {**self.params_range, **params_range}
+        if params_step is not None:
+            self.params_step = {**self.params_step, **params_step}
+        else:
+            self.params_step = {param: 1 for param in self.params_range}  # 默认步长为 1
         
         best_profit = -np.inf
         best_parameters = self.parameters.copy()
         
         import itertools
         param_names = list(self.params_range.keys())
-        param_ranges = [range(*self.params_range[param]) for param in param_names]
+        param_ranges = [
+            np.arange(self.params_range[param][0], 
+                    self.params_range[param][1], 
+                    self.params_step.get(param, 1))  # 使用 np.arange 来支持浮点数
+            for param in param_names
+        ]
         
         for param_combination in itertools.product(*param_ranges):
             # 更新参数
@@ -102,6 +113,7 @@ class BaseStrategy(ABC):
         print(f"Optimized parameters: {self.parameters}, Profit = {best_profit}")
         self.save_parameters()
         return self
+
     
     def plot_basic(self, add_plots=None, title=None, volume_width=0.5, **kwargs):
         if title is None:
