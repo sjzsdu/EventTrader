@@ -4,3 +4,4 @@
 cache
 params
 **/__pycache__/*.*
+dist
