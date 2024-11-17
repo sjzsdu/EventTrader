@@ -4,7 +4,7 @@ class StockData:
     # Class variable to cache trade dates
     trade_dates_cache = None
 
-    def __init__(self, code, start_date=None, end_date=None, period="daily", adjust="hfq"):
+    def __init__(self, code, start_date=None, end_date=None, period="daily", adjust="qfq"):
         self.code = code
         self.period = period
         self.adjust = adjust

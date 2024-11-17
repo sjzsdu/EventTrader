@@ -16,7 +16,7 @@ class DemoAccount:
         self.sell_commission = sell_commission
         self.transactions = []  # 记录交易记录
 
-    def buy(self, data):
+    def buy(self, data, index):
         """
         根据策略中的数据行记录进行买入操作。
         :param data: 包含日期、收盘价、开盘价、最低价、最高价、成交量等信息的字典
@@ -41,10 +41,11 @@ class DemoAccount:
                     'price': price,
                     'shares': shares_to_buy,
                     'cash': self.cash,
-                    'fee': fee
+                    'fee': fee,
+                    'index': index
                 })
 
-    def sell(self, data):
+    def sell(self, data, index):
         """
         根据策略中的数据行记录进行卖出操作。
         :param data: 包含日期、收盘价、开盘价、最低价、最高价、成交量等信息的字典
@@ -65,7 +66,8 @@ class DemoAccount:
                 'price': price,
                 'shares': self.shares,
                 'cash': self.cash,
-                'fee': fee
+                'fee': fee,
+                'index': index
             })
             self.shares = 0
 

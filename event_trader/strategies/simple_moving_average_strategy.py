@@ -1,6 +1,4 @@
-import os
 import pandas as pd
-import numpy as np
 from .base_strategy import BaseStrategy
 from event_trader.stock_data import StockData
 import mplfinance as mpf
@@ -47,13 +45,12 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         return row['short_mavg'] < row['long_mavg']
         
     def show(self):
-        self.calculate_factors()
         stock_data_copy = self.data.copy()
         add_plots = []
 
         add_plots.append(mpf.make_addplot(stock_data_copy['short_mavg'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'))
         add_plots.append(mpf.make_addplot(stock_data_copy['long_mavg'], width=0.8, color='orange', label=f'{self.long_window}-Day MA'))
-        self.plot_basic(add_plots = add_plots, title=f'{self.parameters.get("stock_code", "Stock")} Candle Figure')
+        self.plot_basic(add_plots = add_plots)
 
 
 

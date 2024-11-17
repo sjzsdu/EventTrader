@@ -1,6 +1,4 @@
-import os
 import pandas as pd
-import numpy as np
 from .base_strategy import BaseStrategy
 from event_trader.stock_data import StockData
 import mplfinance as mpf
@@ -47,7 +45,6 @@ class OneMovingAverageStrategy(BaseStrategy):
 
         
     def show(self):
-        self.calculate_factors()
         stock_data_copy = self.data.copy()
         add_plots = []
         add_plots.append(mpf.make_addplot(stock_data_copy['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA'))

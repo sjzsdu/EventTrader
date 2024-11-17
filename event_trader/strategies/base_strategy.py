@@ -2,8 +2,10 @@ import os
 import pandas as pd
 from abc import ABC, abstractmethod
 from event_trader.demo_account import DemoAccount
+from event_trader.config import DATE_COL
 import numpy as np
 import mplfinance as mpf
+
 class BaseStrategy(ABC):
     def __init__(self, stock_data, sub_path, params, params_range):
         self.stock_data = stock_data
@@ -14,6 +16,7 @@ class BaseStrategy(ABC):
         
         self.parameters = {}
         self.load_parameters(self.params)
+        self.calculate_factors()
 
     @abstractmethod
     def load_data(self):
@@ -23,6 +26,10 @@ class BaseStrategy(ABC):
         """
         pass
 
+    def check_params_exists(self):
+        """检查self.params_path文件是否存在"""
+        return os.path.exists(self.params_path)
+    
     def load_parameters(self, default_params):
         """
         Load parameters from a CSV file. If the file does not exist, use the default parameters provided.
@@ -41,22 +48,25 @@ class BaseStrategy(ABC):
         df = pd.DataFrame({name: [value] for name, value in self.parameters.items()})
         df.to_csv(self.params_path, index=False)
 
-    def calculate_profit(self) -> float:
+    def calculate_profit(self) -> DemoAccount:
         account = DemoAccount()
-        for _, row in self.data.iterrows():
+        for index, row in self.data.iterrows():
             if self.buy_signal(row):
-                account.buy(row)
+                account.buy(row, index)
             elif self.sell_signal(row):
-                account.sell(row)
+                account.sell(row, index)
 
         if account.shares > 0:
-            account.sell(self.data.iloc[-1])
+            account.sell(self.data.iloc[-1], len(self.data) - 1)
 
-        return account.get_profit()
+        return account
     
-    def optimize_parameters(self, params_ange=None):
-        if params_ange is not None:
-            self.params_range = {**self.params_range, **params_ange}
+    def optimize_parameters(self, params_range=None, forceOptimize=False):
+        if (self.check_params_exists() and not forceOptimize):
+            self.account = self.calculate_profit()
+            return self
+        if params_range is not None:
+            self.params_range = {**self.params_range, **params_range}
         
         best_profit = -np.inf
         best_parameters = self.parameters.copy()
@@ -72,12 +82,14 @@ class BaseStrategy(ABC):
             
             # 计算因子和利润
             self.calculate_factors()
-            profit = self.calculate_profit()
+            account = self.calculate_profit()
+            profit = account.get_profit()
             
             # 更新最佳参数
             if profit > best_profit:
                 best_profit = profit
                 best_parameters = self.parameters.copy()
+                self.account = account
         
         # 更新为最佳参数
         self.parameters = best_parameters
@@ -85,7 +97,11 @@ class BaseStrategy(ABC):
         self.save_parameters()
         return self
     
-    def plot_basic(self, add_plots=None, title='Candle Figure', volume_width=0.5):
+    def plot_basic(self, add_plots=None, title=None, volume_width=0.5):
+        if title is None:
+            title = f"{self.stock_data.code} {self.__class__.__name__} Figure"
+        if add_plots is None:
+            add_plots = []
         stock_data_copy = self.data.copy()
         stock_data_copy.rename(columns={
             '开盘': 'Open',
@@ -96,16 +112,17 @@ class BaseStrategy(ABC):
         }, inplace=True)
         
         # Convert index to datetime
-        stock_data_copy.index = pd.to_datetime(stock_data_copy.index)
+        stock_data_copy.index = pd.to_datetime(stock_data_copy[DATE_COL])
         
         # Define the style with red for up and green for down
         mc = mpf.make_marketcolors(up='red', down='green', inherit=True)
         s = mpf.make_mpf_style(marketcolors=mc, base_mpf_style='yahoo')
         figsize = (16, 8)
+
         # Plot with mplfinance, return the figure and axes
         fig, axes = mpf.plot(stock_data_copy, type='candle', volume=True, 
                             title=title, ylabel='Price', style=s, ylabel_lower='Volume', 
-                            figsize=figsize, addplot=add_plots, returnfig=True)
+                            figsize=figsize, addplot=add_plots, returnfig=True, datetime_format='%Y-%m-%d')
         
         # Customizing the volume bars width and color
         volume_ax = axes[2]  # Volume is usually plotted on the third axis
@@ -116,8 +133,68 @@ class BaseStrategy(ABC):
                 bar.set_color('red')  # Up color
             else:
                 bar.set_color('green')  # Down color
+        print(f"Optimized parameters: {self.parameters}, Profit = {self.account.get_profit()}")
+        return self.after_plot(fig, axes)
+    
+    def after_plot(self, fig, axes):
+        trades = self.account.transactions
+        ax = axes[0]
+        
+        # Plot each trade with improved layout
+        for trade in trades:
+            date = trade['index']
+            offset = 2  # Adjust the offset for better positioning
+            text_offset = 3  # Extra offset for the text
+            
+            if trade['type'] == 'buy':
+                ax.annotate(
+                    f"Buy\nPrice: {trade['price']}\nShares: {trade['shares']}\nFee: {trade['fee']}",
+                    xy=(date, trade['price']),
+                    xytext=(date, trade['price'] + offset),
+                    arrowprops=dict(facecolor='green', arrowstyle='->', lw=1),
+                    fontsize=8,
+                    color='green',
+                    horizontalalignment='left',
+                    verticalalignment='bottom'
+                )
+            elif trade['type'] == 'sell':
+                ax.annotate(
+                    f"Sell\nPrice: {trade['price']}\nShares: {trade['shares']}\nFee: {trade['fee']}",
+                    xy=(date, trade['price']),
+                    xytext=(date, trade['price'] - offset - text_offset),
+                    arrowprops=dict(facecolor='red', arrowstyle='->', lw=1),
+                    fontsize=8,
+                    color='red',
+                    horizontalalignment='right',
+                    verticalalignment='top'
+                )
 
+        # Draw lines between buy and sell points
+        for i in range(0, len(trades) - 1, 2):
+            buy_trade = trades[i]
+            sell_trade = trades[i + 1]
+            profit = (sell_trade['price'] - buy_trade['price']) * buy_trade['shares'] - (buy_trade['fee'] + sell_trade['fee'])
+            
+            # Plot dashed line between buy and sell
+            ax.plot(
+                [buy_trade['index'], sell_trade['index']],
+                [buy_trade['price'], sell_trade['price']],
+                color='blue', linestyle='--', linewidth=1
+            )
+            
+            # Annotate profit in the middle of the line
+            ax.text(
+                (buy_trade['index'] + (sell_trade['index'] - buy_trade['index']) / 2),
+                (buy_trade['price'] + sell_trade['price']) / 2 + text_offset,
+                f"Profit: {profit:.2f}",
+                fontsize=8,
+                color='blue',
+                horizontalalignment='center',
+                verticalalignment='center'
+            )
+        
         return fig, axes
+
 
 
     def notify(self, message: str):
@@ -143,4 +220,9 @@ class BaseStrategy(ABC):
     @abstractmethod
     def sell_signal(self, row) -> bool:
         """Define the sell signal logic."""
+        pass
+    
+    @abstractmethod
+    def calculate_factors(self):
+        """Calculate the factors."""
         pass
