@@ -12,7 +12,7 @@ class StockInfoFetcher(BaseFetcher):
         
     def fetch_data(self):
         try:
-            print("Fetching data from the internet:")
+            print("Fetching stock info data!")
             data = ak.stock_individual_info_em(
                 symbol=self.stock_data.code,
             )

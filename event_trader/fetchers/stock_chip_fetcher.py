@@ -14,7 +14,7 @@ class StockChipFetcher(BaseFetcher):
         
     def fetch_data(self):
         try:
-            print("Fetching data from the internet:")
+            print("Fetching stock chip data!")
             data = ak.stock_cyq_em(
                 symbol=self.stock_data.code, 
                 adjust=self.stock_data.adjust

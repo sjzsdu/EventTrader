@@ -11,7 +11,7 @@ class StockRealtimeFetcher(BaseFetcher):
         
     def fetch_data(self):
         try:
-            print("Fetching data from the internet:")
+            print("Fetching stock realtime data!")
             data = ak.stock_bid_ask_em(
                 symbol=self.stock_data.code,
             )

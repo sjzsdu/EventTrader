@@ -31,7 +31,7 @@ class StockData:
     
     
     def __getitem__(self, key: str):
-        fetchers = [self.fetches['stock_info'], self.fetches['stock_realtime']]
+        fetchers = [self.fetches['stock_hist'], self.fetches['stock_info'], self.fetches['stock_realtime']]
         for fetcher in fetchers:
             try:
                 return fetcher[key.strip()]

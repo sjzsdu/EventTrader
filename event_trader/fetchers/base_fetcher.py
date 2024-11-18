@@ -2,7 +2,7 @@ import os
 import pandas as pd
 import time
 from datetime import datetime
-from event_trader.config import CACHE_PATH
+from event_trader.config import CACHE_PATH, FETCHER_DEBOUNCE_TIME
 from event_trader.trading_time_checker import TradingTimeChecker
 from typing import TYPE_CHECKING
 
@@ -17,10 +17,14 @@ class BaseFetcher:
 
     def fetch_data(self):
         raise NotImplementedError("Subclasses should implement this method.")
+    
+    def handle_data(self, data: pd.DataFrame):
+        pass
 
     def load_data_from_csv(self):
         if os.path.exists(self.csv_path):
             data = pd.read_csv(self.csv_path)
+            self.handle_data(data)
             return data
         return pd.DataFrame()
 
@@ -48,8 +52,8 @@ class BaseFetcher:
                 return data
         else:
             current_time = time.time()
-            if self.last_call_time and (current_time - self.last_call_time < 30):
-                time.sleep(30 - (current_time - self.last_call_time))
+            if self.last_call_time and (current_time - self.last_call_time < FETCHER_DEBOUNCE_TIME):
+                return self.load_data_from_csv()
             data = self.fetch_data()
             self.save_data_to_csv(data)
             self.last_call_time = time.time()
