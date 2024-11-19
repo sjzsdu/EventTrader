@@ -14,7 +14,7 @@ class BaseStrategy(ABC):
         self.params = params
         self.params_range = params_range
         self.params_step = params_step
-        
+        self.account = None
         self.parameters = {}
         self.load_parameters(self.params)
         self.calculate_factors()
@@ -119,6 +119,8 @@ class BaseStrategy(ABC):
     
     
     def show(self, days = CURRENT_DAYS, **kwargs):
+        if self.account is None:
+            self.optimize_parameters()
         self.calculate_factors()
         stock_data_copy = self.data.copy().tail(days)
         add_plots = self.get_plots(stock_data_copy)
@@ -168,9 +170,9 @@ class BaseStrategy(ABC):
         trades = self.account.transactions
         ax = axes[0]
         # Plot each trade with improved layout
-        if 'transaction' in kwargs and kwargs['transaction']:
+        if 'transaction' not in kwargs or not kwargs['transaction']:
             for trade in trades:
-                date = trade['index'] < HISTORY_DAYS - CURRENT_DAYS
+                date = trade['index'] - (HISTORY_DAYS - days)
                 if date < 0:
                     continue
                 price_offset = trade['price'] * 0.1
@@ -200,25 +202,27 @@ class BaseStrategy(ABC):
                     )
 
         # Draw lines between buy and sell points
-        if 'profit' in kwargs and kwargs['profit']:
+        if 'profit' not in kwargs or not kwargs['profit']:
             for i in range(0, len(trades) - 1, 2):
                 buy_trade = trades[i]
                 sell_trade = trades[i + 1]
-                if buy_trade['index'] < HISTORY_DAYS - CURRENT_DAYS or sell_trade['index'] < HISTORY_DAYS - CURRENT_DAYS:
+                bi = buy_trade['index'] - (HISTORY_DAYS - days)
+                si = sell_trade['index'] - (HISTORY_DAYS - days)
+                if bi < 0 and si < 0:
                     continue
                 price_offset = (buy_trade['price'] + buy_trade['price'])  * 0.1
                 profit = (sell_trade['price'] - buy_trade['price']) * buy_trade['shares'] - (buy_trade['fee'] + sell_trade['fee'])
                 
                 # Plot dashed line between buy and sell
                 ax.plot(
-                    [buy_trade['index'], sell_trade['index']],
+                    [bi, si],
                     [buy_trade['price'], sell_trade['price']],
                     color='blue', linestyle='--', linewidth=1, zorder=3
                 )
                 
                 # Annotate profit in the middle of the line
                 ax.text(
-                    (buy_trade['index'] + (sell_trade['index'] - buy_trade['index']) / 2),
+                    (bi + (si - bi) / 2),
                     max(buy_trade['price'], sell_trade['price']) + price_offset,
                     f"Profit: {profit:.2f}",
                     fontsize=8,
