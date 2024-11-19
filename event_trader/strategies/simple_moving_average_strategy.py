@@ -11,7 +11,7 @@ DEFAULT_PARAMS = {
 
 DEFAULT_PARAMS_RANGE = {
     'short_window': (2, 20),
-    'long_window': (25, 80),
+    'long_window': (20, 80),
 }
 
 class SimpleMovingAverageStrategy(BaseStrategy):
@@ -24,9 +24,6 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
         super().__init__(stock_data, 'simple_moving_average', _params, _params_range, None)
-    
-    def load_data(self):
-        return self.stock_data.hist.copy()
 
     def calculate_factors(self):
         short_window= self.parameters['short_window']
@@ -34,23 +31,22 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         self.data['short_mavg'] = self.data[PRICE_COL].rolling(window=short_window).mean()
         self.data['long_mavg'] = self.data[PRICE_COL].rolling(window=long_window).mean()
 
-    def buy_signal(self, row) -> bool:
-        if pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
-             return False
-        return row['short_mavg'] > row['long_mavg']
+    def buy_signal(self, row, i) -> bool:
+        if i > 0 and pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
+            return False
+        last = self.data.iloc[i-1]
+        return row['short_mavg'] >= row['long_mavg'] and last['short_mavg'] < last['long_mavg']
 
-    def sell_signal(self, row) -> bool:
-        if pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
-             return False
-        return row['short_mavg'] < row['long_mavg']
+    def sell_signal(self, row, i) -> bool:
+        if i > 0 and pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
+            return False
+        last = self.data.iloc[i-1]
+        return row['short_mavg'] <= row['long_mavg'] and last['short_mavg'] > last['long_mavg']
         
-    def show(self, **kwargs):
-        self.calculate_factors()
-        stock_data_copy = self.data.copy()
-        add_plots = []
-        add_plots.append(mpf.make_addplot(stock_data_copy['short_mavg'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'))
-        add_plots.append(mpf.make_addplot(stock_data_copy['long_mavg'], width=0.8, color='orange', label=f'{self.long_window}-Day MA'))
-        self.plot_basic(add_plots = add_plots, **kwargs)
-
+    def get_plots(self, data):
+        return [
+            mpf.make_addplot(data['short_mavg'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'),
+            mpf.make_addplot(data['long_mavg'], width=0.8, color='orange', label=f'{self.long_window}-Day MA')
+        ]
 
 

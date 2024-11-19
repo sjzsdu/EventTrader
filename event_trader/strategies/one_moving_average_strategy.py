@@ -10,7 +10,7 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (5, 50)
+    'window': (2, 50)
 }
 
 class OneMovingAverageStrategy(BaseStrategy):
@@ -24,29 +24,23 @@ class OneMovingAverageStrategy(BaseStrategy):
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
         super().__init__(stock_data, 'one_moving_average', _params, _params_range, None)
         
-        
-    def load_data(self):
-        return self.stock_data.hist.copy()
-        
-
     def calculate_factors(self):
         window = self.parameters['window']
         self.data['moving_avg'] = self.data[PRICE_COL].rolling(window=window).mean()
 
-    def buy_signal(self, row) -> bool:
-        if pd.isna(row['moving_avg']):
+    def buy_signal(self, row, i) -> bool:
+        if i > 0 and pd.isna(row['moving_avg']):
              return False
-        return row[PRICE_COL] > row['moving_avg']
+        last = self.data.iloc[i-1]
+        return row[PRICE_COL] >= row['moving_avg'] and last['moving_avg'] < last[PRICE_COL]
 
-    def sell_signal(self, row) -> bool:
-        if pd.isna(row['moving_avg']):
+    def sell_signal(self, row, i) -> bool:
+        if i > 0 and pd.isna(row['moving_avg']):
              return False
-        return row[PRICE_COL] < row['moving_avg']
+        last = self.data.iloc[i-1]
+        return row[PRICE_COL] <= row['moving_avg'] and last['moving_avg'] > last[PRICE_COL]
 
-        
-    def show(self, **kwargs):
-        self.calculate_factors()
-        stock_data_copy = self.data.copy()
-        add_plots = []
-        add_plots.append(mpf.make_addplot(stock_data_copy['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA'))
-        self.plot_basic(add_plots = add_plots, **kwargs)
+    def get_plots(self, data):
+        return [
+            mpf.make_addplot(data['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA')
+        ]   

@@ -52,8 +52,9 @@ class BaseFetcher:
                 return data
         else:
             current_time = time.time()
-            if self.last_call_time and (current_time - self.last_call_time < FETCHER_DEBOUNCE_TIME):
-                return self.load_data_from_csv()
+            if self.last_call_time is not None:
+                if current_time - self.last_call_time < FETCHER_DEBOUNCE_TIME:
+                    return self.load_data_from_csv()
             data = self.fetch_data()
             self.save_data_to_csv(data)
             self.last_call_time = time.time()

@@ -35,11 +35,6 @@ class TraditionalBollStrategy(BaseStrategy):
         _params_step = params_step if params_step is not None else DEFAULT_PARAMS_STEP
         super().__init__(stock_data, 'traditional_boll', _params, _params_range, _params_step)
         
-        
-    def load_data(self):
-        return self.stock_data.hist.copy()
-        
-
     def calculate_factors(self):
         window = self.parameters['window']
         self.data['moving_avg'] = self.data[PRICE_COL].rolling(window=window).mean()
@@ -51,31 +46,22 @@ class TraditionalBollStrategy(BaseStrategy):
         self.data['down'] = self.data['moving_avg'] - (self.data['std'] * self.parameters['std'])
         
 
-    def buy_signal(self, row) -> bool:
+    def buy_signal(self, row, i) -> bool:
         # 确保布林带数据有效
-        if pd.isna(row['down']):
+        if i > 0 and pd.isna(row['down']):
             return False
-        # 当价格低于布林带下轨时，可能超卖，生成买入信号
-        if row[PRICE_COL] < row['down']:
-            return True
-        return False
+        last = self.data.iloc[i-1]
+        return row[PRICE_COL] <= row['down'] and last['down'] > last[PRICE_COL]
 
-    def sell_signal(self, row) -> bool:
-        # 确保布林带数据有效
-        if pd.isna(row['upper']):
+    def sell_signal(self, row, i) -> bool:
+        if i > 0 and pd.isna(row['upper']):
             return False
-        # 当价格高于布林带上轨时，可能超买，生成卖出信号
-        if row[PRICE_COL] > row['upper']:
-            return True
-        return False
+        last = self.data.iloc[i-1]
+        return row[PRICE_COL] >= row['upper'] and last['upper'] < last[PRICE_COL]
 
-
-        
-    def show(self, **kwargs):
-        self.calculate_factors()
-        stock_data_copy = self.data.copy()
-        add_plots = []
-        add_plots.append(mpf.make_addplot(stock_data_copy['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA'))
-        add_plots.append(mpf.make_addplot(stock_data_copy['upper'], width=0.8, color='purple', label=f'{self.parameters["window"]}-Upper'))
-        add_plots.append(mpf.make_addplot(stock_data_copy['down'], width=0.8, color='green', label=f'{self.parameters["window"]}-Down'))
-        self.plot_basic(add_plots = add_plots, **kwargs)
+    def get_plots(self, data):
+        return [
+            mpf.make_addplot(data['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA'),
+            mpf.make_addplot(data['upper'], width=0.8, color='purple', label=f'{self.parameters["window"]}-Upper'),
+            mpf.make_addplot(data['down'], width=0.8, color='green', label=f'{self.parameters["window"]}-Down')
+        ]

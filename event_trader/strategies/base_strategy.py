@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from abc import ABC, abstractmethod
 from event_trader.demo_account import DemoAccount
-from event_trader.config import DATE_COL, SYMBOL_COL
+from event_trader.config import DATE_COL, SYMBOL_COL, CURRENT_DAYS, HISTORY_DAYS
 import numpy as np
 import mplfinance as mpf
 
@@ -18,14 +18,10 @@ class BaseStrategy(ABC):
         self.parameters = {}
         self.load_parameters(self.params)
         self.calculate_factors()
-
-    @abstractmethod
+        
+    
     def load_data(self):
-        """
-        Load stock data into a DataFrame.
-        This method should be implemented to load the data as needed.
-        """
-        pass
+        return self.stock_data.hist.copy()
 
     def check_params_exists(self):
         """检查self.params_path文件是否存在"""
@@ -52,9 +48,9 @@ class BaseStrategy(ABC):
     def calculate_profit(self) -> DemoAccount:
         account = DemoAccount(initial_cash=1000000)  # 初始化DemoAccount实例
         for index, row in self.data.iterrows():
-            if self.buy_signal(row):
+            if self.buy_signal(row, index):
                 account.buy(row, index, position=1.0)  # 假设默认全仓买入
-            elif self.sell_signal(row):
+            elif self.sell_signal(row, index):
                 account.sell(row, index, position=1.0)  # 假设默认全仓卖出
 
         # 检查是否还有未卖出的股票
@@ -68,6 +64,9 @@ class BaseStrategy(ABC):
 
         return account
     
+    def validate_parameter(self, parameters):
+        return True
+        
     def optimize_parameters(self, params_range=None, params_step=None, forceOptimize=False):
         if (self.check_params_exists() and not forceOptimize):
             self.account = self.calculate_profit()
@@ -97,30 +96,41 @@ class BaseStrategy(ABC):
             for i, param_name in enumerate(param_names):
                 self.parameters[param_name] = param_combination[i]
             
-            # 计算因子和利润
-            self.calculate_factors()
-            account = self.calculate_profit()
-            profit = account.get_profit()
-            
-            # 更新最佳参数
-            if profit > best_profit:
-                best_profit = profit
-                best_parameters = self.parameters.copy()
-                self.account = account
+            if self.validate_parameter(self.parameters):
+                # 计算因子和利润
+                self.calculate_factors()
+                account = self.calculate_profit()
+                profit = account.get_profit()
+                
+                # 更新最佳参数
+                if profit > best_profit:
+                    best_profit = profit
+                    best_parameters = self.parameters.copy()
+                    self.account = account
         
         # 更新为最佳参数
         self.parameters = best_parameters
         print(f"Optimized parameters: {self.parameters}, Profit = {best_profit}")
         self.save_parameters()
         return self
+    
+    def get_plots(self, data):
+        return []
+    
+    
+    def show(self, days = CURRENT_DAYS, **kwargs):
+        self.calculate_factors()
+        stock_data_copy = self.data.copy().tail(days)
+        add_plots = self.get_plots(stock_data_copy)
+        self.plot_basic(days = days, add_plots = add_plots, **kwargs)
 
     
-    def plot_basic(self, add_plots=None, title=None, volume_width=0.5, **kwargs):
+    def plot_basic(self, days = CURRENT_DAYS, add_plots=None, title=None, volume_width=0.5, **kwargs):
         if title is None:
             title = f"{self.stock_data.code} {self.__class__.__name__} Figure"
         if add_plots is None:
             add_plots = []
-        stock_data_copy = self.data.copy()
+        stock_data_copy = self.data.copy().tail(days)
         stock_data_copy.rename(columns={
             '开盘': 'Open',
             '收盘': 'Close',
@@ -152,17 +162,17 @@ class BaseStrategy(ABC):
             else:
                 bar.set_color('green')  # Down color
         print(f"Optimized parameters: {self.parameters}, Profit = {self.account.get_profit()}")
-        return self.after_plot(fig, axes, **kwargs)
+        return self.after_plot(fig, axes, days = days,  **kwargs)
     
-    def after_plot(self, fig, axes, **kwargs):
+    def after_plot(self, fig, axes, days= CURRENT_DAYS, **kwargs):
         trades = self.account.transactions
         ax = axes[0]
-        volume_ax = axes[1]  # Reference to the volume axis
-        ylim = ax.get_ylim()
         # Plot each trade with improved layout
         if 'transaction' in kwargs and kwargs['transaction']:
             for trade in trades:
-                date = trade['index']
+                date = trade['index'] < HISTORY_DAYS - CURRENT_DAYS
+                if date < 0:
+                    continue
                 price_offset = trade['price'] * 0.1
                 if trade['type'] == 'buy':
                     ax.annotate(
@@ -194,6 +204,8 @@ class BaseStrategy(ABC):
             for i in range(0, len(trades) - 1, 2):
                 buy_trade = trades[i]
                 sell_trade = trades[i + 1]
+                if buy_trade['index'] < HISTORY_DAYS - CURRENT_DAYS or sell_trade['index'] < HISTORY_DAYS - CURRENT_DAYS:
+                    continue
                 price_offset = (buy_trade['price'] + buy_trade['price'])  * 0.1
                 profit = (sell_trade['price'] - buy_trade['price']) * buy_trade['shares'] - (buy_trade['fee'] + sell_trade['fee'])
                 
@@ -239,12 +251,12 @@ class BaseStrategy(ABC):
             raise KeyError(f"Key '{key}' not found in {self.__class__.__name__}")
 
     @abstractmethod
-    def buy_signal(self, row) -> bool:
+    def buy_signal(self, row, i) -> bool:
         """Define the buy signal logic."""
         pass
 
     @abstractmethod
-    def sell_signal(self, row) -> bool:
+    def sell_signal(self, row, i) -> bool:
         """Define the sell signal logic."""
         pass
     
