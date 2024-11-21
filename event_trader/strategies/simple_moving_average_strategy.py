@@ -11,7 +11,7 @@ DEFAULT_PARAMS = {
 
 DEFAULT_PARAMS_RANGE = {
     'short_window': (2, 20),
-    'long_window': (20, 80),
+    'long_window': (3, 80),
 }
 
 class SimpleMovingAverageStrategy(BaseStrategy):
@@ -30,18 +30,29 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         long_window= self.parameters['long_window']
         self.data['short_mavg'] = self.data[PRICE_COL].rolling(window=short_window).mean()
         self.data['long_mavg'] = self.data[PRICE_COL].rolling(window=long_window).mean()
+        
+    def validate_parameter(self, parameters):
+        if parameters['short_window'] >= parameters['long_window']:
+            return False
+        return False
+    
+    def should_buy(self, row):
+        return row['short_mavg'] >= row['long_mavg']
+    
+    def should_sell(self, row):
+        return row['short_mavg'] <= row['long_mavg']
 
     def buy_signal(self, row, i) -> bool:
         if i > 0 and pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
             return False
         last = self.data.iloc[i-1]
-        return row['short_mavg'] >= row['long_mavg'] and last['short_mavg'] < last['long_mavg']
+        return self.should_buy(row) and self.should_sell(last)
 
     def sell_signal(self, row, i) -> bool:
         if i > 0 and pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
             return False
         last = self.data.iloc[i-1]
-        return row['short_mavg'] <= row['long_mavg'] and last['short_mavg'] > last['long_mavg']
+        return self.should_sell(row) and self.should_buy(last)
         
     def get_plots(self, data):
         return [

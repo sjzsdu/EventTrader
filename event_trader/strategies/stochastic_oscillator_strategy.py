@@ -51,19 +51,23 @@ class StochasticOscillatorStrategy(BaseStrategy):
         # 计算J值
         data['J'] = 3.0 * data['K'] - 2.0 * data['D']
 
+    def should_buy(self, row):
+        return row['K'] >= row['D'] and row['K'] < 50
     
+    def should_sell(self, row):
+        return row['K'] <= row['D']  and row['K'] > 50
 
     def buy_signal(self, row, i) -> bool:
-        if i > 0 and pd.isna(row['K']) or pd.isna(row['D']):
-             return False
+        if i == 0 or pd.isna(row['K']) or pd.isna(row['D']):
+            return False
         last = self.data.iloc[i-1]
-        return row['K'] >= row['D'] and last['K'] < last['D'] and row['K'] < 50
+        return self.should_buy(row) and self.should_sell(last)
 
     def sell_signal(self, row, i) -> bool:
-        if pd.isna(row['K']) or pd.isna(row['D']):
+        if i == 0 or pd.isna(row['K']) or pd.isna(row['D']):
              return False
         last = self.data.iloc[i-1]
-        return row['K'] <= row['D'] and last['K'] > last['D'] and row['K'] > 50
+        return self.should_sell(row) and self.should_buy(last)
         
     def get_plots(self, data):
         high = data['最高'].max()

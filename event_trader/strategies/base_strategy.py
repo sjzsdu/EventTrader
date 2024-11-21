@@ -237,6 +237,12 @@ class BaseStrategy(ABC):
         
         return fig, axes
 
+    def status(self):
+        if self.should_buy(self.data.iloc[-1]):
+            return "Buy"
+        if self.should_sell(self.data.iloc[-1]):
+            return "Sell"
+        return 'None'
 
 
     def notify(self, message: str):
@@ -263,6 +269,13 @@ class BaseStrategy(ABC):
     def sell_signal(self, row, i) -> bool:
         """Define the sell signal logic."""
         pass
+    
+
+    def should_buy(self, row) -> bool:
+        return False
+
+    def should_sell(self, row) -> bool:
+        return False
     
     @abstractmethod
     def calculate_factors(self):

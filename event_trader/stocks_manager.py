@@ -1,7 +1,5 @@
 from event_trader.stock_info import StockInfo
 
-
-
 class StocksManager:
     def __init__(self, symbols):
         self.symbols = symbols

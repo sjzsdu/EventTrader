@@ -45,19 +45,24 @@ class TraditionalBollStrategy(BaseStrategy):
         self.data['upper'] = self.data['moving_avg'] + (self.data['std'] * self.parameters['std'])
         self.data['down'] = self.data['moving_avg'] - (self.data['std'] * self.parameters['std'])
         
+    def should_buy(self, row):
+        return row[PRICE_COL] <= row['down']
+    
+    def should_sell(self, row):
+        return row[PRICE_COL] >= row['upper']
 
     def buy_signal(self, row, i) -> bool:
         # 确保布林带数据有效
         if i > 0 and pd.isna(row['down']):
             return False
         last = self.data.iloc[i-1]
-        return row[PRICE_COL] <= row['down'] and last['down'] > last[PRICE_COL]
+        return self.should_buy(row) and self.should_sell(last)
 
     def sell_signal(self, row, i) -> bool:
         if i > 0 and pd.isna(row['upper']):
             return False
         last = self.data.iloc[i-1]
-        return row[PRICE_COL] >= row['upper'] and last['upper'] < last[PRICE_COL]
+        return self.should_sell(row) and self.should_buy(last)
 
     def get_plots(self, data):
         return [

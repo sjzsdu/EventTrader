@@ -27,18 +27,24 @@ class OneMovingAverageStrategy(BaseStrategy):
     def calculate_factors(self):
         window = self.parameters['window']
         self.data['moving_avg'] = self.data[PRICE_COL].rolling(window=window).mean()
+        
+    def should_buy(self, row):
+        return row[PRICE_COL] >= row['moving_avg']
+    
+    def should_sell(self, row):
+        return row[PRICE_COL] <= row['moving_avg']
 
     def buy_signal(self, row, i) -> bool:
-        if i > 0 and pd.isna(row['moving_avg']):
-             return False
+        if i == 0 or pd.isna(row['moving_avg']):
+            return False
         last = self.data.iloc[i-1]
-        return row[PRICE_COL] >= row['moving_avg'] and last['moving_avg'] < last[PRICE_COL]
+        return self.should_buy(row) and self.should_sell(last)
 
     def sell_signal(self, row, i) -> bool:
-        if i > 0 and pd.isna(row['moving_avg']):
-             return False
+        if i == 0 or pd.isna(row['moving_avg']):
+            return False
         last = self.data.iloc[i-1]
-        return row[PRICE_COL] <= row['moving_avg'] and last['moving_avg'] > last[PRICE_COL]
+        return self.should_sell(row) and self.should_buy(last)
 
     def get_plots(self, data):
         return [
