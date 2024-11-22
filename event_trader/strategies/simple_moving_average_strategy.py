@@ -16,14 +16,18 @@ DEFAULT_PARAMS_RANGE = {
 
 class SimpleMovingAverageStrategy(BaseStrategy):
     """
-    计算两个不同周期的移动平均值。
+    移动平均价格：计算两个不同周期的移动平均值。
     当短周期的移动平均线高于长周期的移动平均线时，买入；
     当短周期的移动平均线低于长周期的移动平均线时，卖出。
     """
-    def __init__(self, stock_data: StockData, params = None, params_range=None):
+    def __init__(self, stock_data: StockData, *, sub_path = None, params = None, params_range=None, factors=None):
+        if factors is None:
+            factors = ['short_mavg', 'long_mavg']
+        if sub_path is None:
+            sub_path = 'simple_moving_average'
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'simple_moving_average', _params, _params_range, None)
+        super().__init__(stock_data, sub_path, _params, _params_range, None, factors)
 
     def calculate_factors(self):
         short_window= self.parameters['short_window']
@@ -34,7 +38,7 @@ class SimpleMovingAverageStrategy(BaseStrategy):
     def validate_parameter(self, parameters):
         if parameters['short_window'] >= parameters['long_window']:
             return False
-        return False
+        return True
     
     def should_buy(self, row):
         return row['short_mavg'] >= row['long_mavg']
@@ -43,16 +47,20 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         return row['short_mavg'] <= row['long_mavg']
 
     def buy_signal(self, row, i) -> bool:
-        if i > 0 and pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
+        if i==0 or pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_buy(row) and self.should_sell(last)
+        if  pd.isna(last['short_mavg']) or pd.isna(last['long_mavg']):
+            return False
+        return self.should_buy(row) and last['short_mavg'] < last['long_mavg']
 
     def sell_signal(self, row, i) -> bool:
-        if i > 0 and pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
+        if i == 0 or pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_sell(row) and self.should_buy(last)
+        if  pd.isna(last['short_mavg']) or pd.isna(last['long_mavg']):
+            return False
+        return self.should_sell(row)
         
     def get_plots(self, data):
         return [

@@ -21,7 +21,7 @@ DEFAULT_PARAMS_STEP = {
 
 class TraditionalBollStrategy(BaseStrategy):
     """
-    布林带的组成：
+    布林带（BOLL）
     中轨（中线） ：
     通常是一个特定周期的简单移动平均线（SMA），例如20天的移动平均线。
     上轨和下轨：
@@ -33,7 +33,7 @@ class TraditionalBollStrategy(BaseStrategy):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
         _params_step = params_step if params_step is not None else DEFAULT_PARAMS_STEP
-        super().__init__(stock_data, 'traditional_boll', _params, _params_range, _params_step)
+        super().__init__(stock_data, 'traditional_boll', _params, _params_range, _params_step, ['moving_avg', 'upper', 'down'])
         
     def calculate_factors(self):
         window = self.parameters['window']
@@ -53,16 +53,16 @@ class TraditionalBollStrategy(BaseStrategy):
 
     def buy_signal(self, row, i) -> bool:
         # 确保布林带数据有效
-        if i > 0 and pd.isna(row['down']):
+        if i == 0 or pd.isna(row['down']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_buy(row) and self.should_sell(last)
+        return self.should_buy(row)
 
     def sell_signal(self, row, i) -> bool:
-        if i > 0 and pd.isna(row['upper']):
+        if i==0 or pd.isna(row['upper']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_sell(row) and self.should_buy(last)
+        return self.should_sell(row)
 
     def get_plots(self, data):
         return [

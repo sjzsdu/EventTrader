@@ -5,12 +5,17 @@ class StockData:
     # Class variable to cache trade dates
     trade_dates_cache = None
 
-    def __init__(self, code, start_date=None, end_date=None, period="daily", adjust="qfq"):
+    def __init__(self, code, start_date=None, end_date=None, days=None, period="daily", adjust="qfq"):
         self.code = code
         self.period = period
         self.adjust = adjust
-        self.start_date = start_date or (datetime.now() - timedelta(days=HISTORY_DAYS)).strftime('%Y-%m-%d')
+        self.days = days or HISTORY_DAYS
         self.end_date = end_date or datetime.now().strftime('%Y-%m-%d')
+        if start_date:
+            self.start_date = start_date
+        else:
+            end_date_obj = datetime.strptime(self.end_date, '%Y-%m-%d')
+            self.start_date = (end_date_obj - timedelta(days=self.days)).strftime('%Y-%m-%d')
         self.fetches = {
             'stock_hist': StockHistFetcher(self),
             'stock_info': StockInfoFetcher(self),

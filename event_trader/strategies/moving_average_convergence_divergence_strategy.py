@@ -20,12 +20,12 @@ DEFAULT_PARAMS_RANGE = {
 
 class MovingAverageConvergenceDivergenceStrategy(BaseStrategy):
     """
-    KDJ指标
+    MACD 移动平均线收敛/发散指标（Moving Average Convergence Divergence）
     """
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'moving_average_convergence_divergence', _params, _params_range, None)
+        super().__init__(stock_data, 'moving_average_convergence_divergence', _params, _params_range, None, ['DIF', 'DEA', 'MACD'])
         
     def calculate_factors(self):
         data = self.data
@@ -50,21 +50,13 @@ class MovingAverageConvergenceDivergenceStrategy(BaseStrategy):
             return False
         return True 
     
+    def should_buy(self, row):
+        return row['DIF'] > row['DEA']
+    
+    def should_sell(self, row):
+        return row['DIF'] < row['DEA']
 
     def buy_signal(self, row, i) -> bool:
-        """
-        Evaluate if there's a buy signal based on MACD strategy.
-        
-        Parameters:
-        row : DataFrame row
-            It contains all necessary columns such as 'DIF' and 'DEA'.
-        i : int
-            Current index in the data frame.
-        
-        Returns:
-        bool
-            True if buy signal is triggered, otherwise False.
-        """
         if i == 0 or pd.isna(row['DIF']) or pd.isna(row['DEA']):
             return False
         last = self.data.iloc[i-1]
@@ -79,19 +71,6 @@ class MovingAverageConvergenceDivergenceStrategy(BaseStrategy):
         return False
 
     def sell_signal(self, row, i) -> bool:
-        """
-        Evaluate if there's a sell signal based on MACD strategy.
-        
-        Parameters:
-        row : DataFrame row
-            It contains all necessary columns such as 'DIF' and 'DEA'.
-        i : int
-            Current index in the data frame.
-        
-        Returns:
-        bool
-            True if sell signal is triggered, otherwise False.
-        """
         if i == 0 or pd.isna(row['DIF']) or pd.isna(row['DEA']):
             return False
         last = self.data.iloc[i-1]

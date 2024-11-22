@@ -19,12 +19,12 @@ DEFAULT_PARAMS_RANGE = {
 
 class StochasticOscillatorStrategy(BaseStrategy):
     """
-    KDJ指标
+    KDJ指标, 随机振荡器
     """
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'stochastic_oscillator', _params, _params_range, None)
+        super().__init__(stock_data, 'stochastic_oscillator', _params, _params_range, None, ['K', 'D', 'J'])
         
     def calculate_factors(self):
         data = self.data
@@ -52,22 +52,22 @@ class StochasticOscillatorStrategy(BaseStrategy):
         data['J'] = 3.0 * data['K'] - 2.0 * data['D']
 
     def should_buy(self, row):
-        return row['K'] >= row['D'] and row['K'] < 50
+        return row['K'] >= row['D']
     
     def should_sell(self, row):
-        return row['K'] <= row['D']  and row['K'] > 50
+        return row['K'] <= row['D']
 
     def buy_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['K']) or pd.isna(row['D']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_buy(row) and self.should_sell(last)
+        return self.should_buy(row) and self.should_sell(last) and row['K'] < 50
 
     def sell_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['K']) or pd.isna(row['D']):
              return False
         last = self.data.iloc[i-1]
-        return self.should_sell(row) and self.should_buy(last)
+        return self.should_sell(row) and self.should_buy(last) and row['K'] > 50
         
     def get_plots(self, data):
         high = data['最高'].max()

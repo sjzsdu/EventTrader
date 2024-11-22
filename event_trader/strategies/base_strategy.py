@@ -3,11 +3,12 @@ import pandas as pd
 from abc import ABC, abstractmethod
 from event_trader.demo_account import DemoAccount
 from event_trader.config import DATE_COL, SYMBOL_COL, CURRENT_DAYS, HISTORY_DAYS
+from event_trader.utils import friendly_number
 import numpy as np
 import mplfinance as mpf
 
 class BaseStrategy(ABC):
-    def __init__(self, stock_data, sub_path, params, params_range, params_step):
+    def __init__(self, stock_data, sub_path, params, params_range, params_step, factors = []):
         self.stock_data = stock_data
         self.data = self.load_data()
         self.params_path = os.path.join('params', sub_path, f'{self.stock_data.code}.csv')
@@ -16,8 +17,10 @@ class BaseStrategy(ABC):
         self.params_step = params_step
         self.account = None
         self.parameters = {}
+        self.factors = factors
         self.load_parameters(self.params)
         self.calculate_factors()
+        self.optimize_parameters()
         
     
     def load_data(self):
@@ -49,9 +52,9 @@ class BaseStrategy(ABC):
         account = DemoAccount(initial_cash=1000000)  # 初始化DemoAccount实例
         for index, row in self.data.iterrows():
             if self.buy_signal(row, index):
-                account.buy(row, index, position=1.0)  # 假设默认全仓买入
+                account.buy(row, index)
             elif self.sell_signal(row, index):
-                account.sell(row, index, position=1.0)  # 假设默认全仓卖出
+                account.sell(row, index)
 
         # 检查是否还有未卖出的股票
         for symbol, shares in account.holdings.items():
@@ -67,8 +70,9 @@ class BaseStrategy(ABC):
     def validate_parameter(self, parameters):
         return True
         
-    def optimize_parameters(self, params_range=None, params_step=None, forceOptimize=False):
-        if (self.check_params_exists() and not forceOptimize):
+    def optimize_parameters(self, params_range=None, params_step=None, force_optimize=False):
+        if (self.check_params_exists() and not force_optimize):
+            self.calculate_factors()
             self.account = self.calculate_profit()
             return self
         
@@ -101,7 +105,6 @@ class BaseStrategy(ABC):
                 self.calculate_factors()
                 account = self.calculate_profit()
                 profit = account.get_profit()
-                
                 # 更新最佳参数
                 if profit > best_profit:
                     best_profit = profit
@@ -270,6 +273,12 @@ class BaseStrategy(ABC):
         """Define the sell signal logic."""
         pass
     
+    def get_factors(self):
+        row = self.data.iloc[-1]
+        dic = {}
+        for factor in self.factors:
+            dic[factor] = friendly_number(row[factor])
+        return dic
 
     def should_buy(self, row) -> bool:
         return False
