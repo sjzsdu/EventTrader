@@ -1,6 +1,6 @@
-# 量化交易工具
+# 量化分析工具
 
-欢迎使用量化交易工具，这是一个全面的解决方案，旨在简化您的量化交易策略。该项目提供了强大的数据收集、策略开发、回测和优化工具，使您能够最大限度地提高交易指标的准确性。
+本项目是一个量化分析的工具，感谢akshare提供了财经数据接口，本项目是基于akshare提供的A股数据来对各种交易策略进行收益分析的工具，还提供了按照策略提供选股的功能。
 
 ## 功能
 
@@ -12,31 +12,43 @@
 - **策略组合管理**：支持多组策略对多只股票同时监测，实现在买入点或卖出点的仓位控制和管理。
 - **消息推送功能**：通过订阅功能，当捕捉到买卖点时发送通知。
 
-## 项目设置
+## 安装
 
-本项目使用 Poetry 进行依赖管理和打包。要设置项目，请确保您系统上已安装 Poetry。然后通过运行以下命令安装必要的依赖项：
-poetry install
+```bash
+pip install event-trader
+```
 
-## 入门指南
+## 使用
 
-1. **克隆仓库**：
-git clone https://github.com/sjzsdu/EventTrader.git
-cd EventTrader
+### 个股
+1. 个股主要使用StockInfo这个类，可以通过get_result方法获得各个策略的近一年时间中的交易机会以及收益
+![strategy profit](/assets/stock-profit.png)
+表中的profit是近一年按照该策略交易的预计收益, parameters是调优后的参数。
+```python
+from event_trader import StockInfo
+from event_trader.strategies import SimpleMovingAverageStrategy, UpdateSimpleMovingAverageStrategy,StochasticOscillatorStrategy, OneMovingAverageStrategy, TraditionalBollStrategy, MovingAverageConvergenceDivergenceStrategy
 
-2. **使用 Poetry 安装依赖项**：
-poetry install
+STRATEGIES = {
+    'SMA': SimpleMovingAverageStrategy,
+    'USMA': UpdateSimpleMovingAverageStrategy,
+    'SO': StochasticOscillatorStrategy,
+    'OMA': OneMovingAverageStrategy,
+    'TB': TraditionalBollStrategy,
+    'MACD': MovingAverageConvergenceDivergenceStrategy
+}
+stock = StockInfo('601688', strategies = STRATEGIES)
+stock.get_result()
+```
+2. 显示策略的买卖点
+![strategy buy and sell](/assets/strategy-buy-sell.png)
+stock.SMA.show() 调用这个方法可以用来显示K线图，以及策略中的计算因子和买卖点，凭此可以验证交易策略的收益情况
+stock.SMA.account.transactions 可以查看策略的具体交易信息。
 
-3. **使用 Jupyter Notebook 体验该项目的参数调优和选股策略回测功能**。确保您已安装 Jupyter Notebook，通过以下命令启动：
-poetry run jupyter notebook
+### 自选股
 
-浏览项目文件以配置您的策略并执行交易模拟。
-
-## 贡献
-
-我们欢迎对本项目的贡献！请随时打开问题或提交拉取请求。在提出更改之前，请确保代码符合现有样式并通过所有测试。
+### 板块
 
 ## 开发计划
-
 - **选股策略开发**：正在开发更多的选股策略。如有需求，请联系我以开发和验证个性化的策略。
 - **消息推送功能**：计划增加推送功能，当捕捉到买卖点后能够发送消息给订阅者。
 - **策略组合功能**：将实现策略组合的功能，支持多组策略对多只股票的监测和仓位管理。
@@ -47,6 +59,6 @@ poetry run jupyter notebook
 
 ## 联系
 
-如有问题或反馈，请联系：youremail@example.com。
+如有问题或反馈，请联系：122828837@qq.com。
 
 祝交易顺利！

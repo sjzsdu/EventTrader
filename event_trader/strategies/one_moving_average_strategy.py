@@ -27,24 +27,37 @@ class OneMovingAverageStrategy(BaseStrategy):
     def calculate_factors(self):
         window = self.parameters['window']
         self.data['moving_avg'] = self.data[PRICE_COL].rolling(window=window).mean()
+        short_mavg_derivative = self.data['moving_avg'].diff()
+        self.data['mavg_derivative'] = short_mavg_derivative.fillna(0)
         
     def should_buy(self, row):
-        return row[PRICE_COL] >= row['moving_avg']
+        last1 = self.data.iloc[-2]
+        last2 = self.data.iloc[-3]
+        last3 = self.data.iloc[-4]
+        return row['mavg_derivative'] > 0 and last1['mavg_derivative'] >= 0 and last2['mavg_derivative'] <= 0 and last3['mavg_derivative'] < 0
     
     def should_sell(self, row):
-        return row[PRICE_COL] <= row['moving_avg']
+        last1 = self.data.iloc[-2]
+        last2 = self.data.iloc[-3]
+        last3 = self.data.iloc[-4]
+        return row['mavg_derivative'] < 0 and last1['mavg_derivative'] <= 0 and last2['mavg_derivative'] >= 0 and last3['mavg_derivative'] > 0
 
     def buy_signal(self, row, i) -> bool:
-        if i == 0 or pd.isna(row['moving_avg']):
+        if i < self.window + 3 or pd.isna(row['moving_avg']):
             return False
-        last = self.data.iloc[i-1]
-        return self.should_buy(row) and self.should_sell(last)
+        last1 = self.data.iloc[i-1]
+        last2 = self.data.iloc[i-2]
+        last3 = self.data.iloc[i-3]
+        
+        return row['mavg_derivative'] > 0 and last1['mavg_derivative'] > 0 and last2['mavg_derivative'] < 0 and last3['mavg_derivative'] < 0
 
     def sell_signal(self, row, i) -> bool:
-        if i == 0 or pd.isna(row['moving_avg']):
+        if i < self.window + 3 or pd.isna(row['moving_avg']):
             return False
-        last = self.data.iloc[i-1]
-        return self.should_sell(row) and self.should_buy(last)
+        last1 = self.data.iloc[i-1]
+        last2 = self.data.iloc[i-2]
+        last3 = self.data.iloc[i-3]
+        return row['mavg_derivative'] < 0 and last1['mavg_derivative'] < 0 and last2['mavg_derivative'] > 0 and last3['mavg_derivative'] > 0
     
     def get_plots(self, data):
         return [

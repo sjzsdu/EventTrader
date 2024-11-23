@@ -1,14 +1,16 @@
-from event_trader.strategies import STRATEGIES, BaseStrategy
+from event_trader.strategies import BaseStrategy, OneMovingAverageStrategy
 from event_trader import StockData
 from event_trader.utils import get_first_line
 import pandas as pd
 
 class StockInfo:
-    def __init__(self, symbol: str, stock_kwargs = {}):
+    def __init__(self, symbol: str, stock_kwargs = {}, strategies = None):
         self.symbol = symbol
         self.stock_data = StockData(symbol, **stock_kwargs)
         self.strategies: dict[str, BaseStrategy] = {}
-        for key, item in STRATEGIES.items():
+        if strategies is None:
+            self.strategies['OMA'] = OneMovingAverageStrategy(self.stock_data)
+        for key, item in strategies.items():
             self.strategies[key] = item(self.stock_data)
             
     def __getattr__(self, key: str):
