@@ -20,8 +20,7 @@ class BaseStrategy(ABC):
         self.factors = factors
         self.load_parameters(self.params)
         self.calculate_factors()
-        self.optimize_parameters()
-        
+        self.account = self.calculate_profit()
     
     def load_data(self):
         return self.stock_data.hist.copy()
@@ -289,4 +288,7 @@ class BaseStrategy(ABC):
     @abstractmethod
     def calculate_factors(self):
         """Calculate the factors."""
+        pass
+
+    def show_factors(self) -> bool:
         pass

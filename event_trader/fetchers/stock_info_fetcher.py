@@ -2,13 +2,11 @@ import akshare as ak
 from .base_fetcher import BaseFetcher
 import pandas as pd
 
-from typing import TYPE_CHECKING
-if TYPE_CHECKING:
-    from event_trader.stock_data import StockData
-    
+from typing import Any
 class StockInfoFetcher(BaseFetcher):
-    def __init__(self, stock_data: 'StockData'):
-        super().__init__(stock_data, "stock_info")
+    def __init__(self, stock_data: Any):
+        self.stock_data = stock_data
+        super().__init__(stock_data.code, file_name = "stock_info")
         
     def fetch_data(self):
         try:

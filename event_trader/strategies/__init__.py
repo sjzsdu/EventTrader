@@ -8,10 +8,10 @@ from .moving_average_convergence_divergence_strategy import MovingAverageConverg
 
 STRATEGIES = {
     'SMA': SimpleMovingAverageStrategy,
-    'USMA': UpdateSimpleMovingAverageStrategy,
-    'SO': StochasticOscillatorStrategy,
-    'OMA': OneMovingAverageStrategy,
-    'TB': TraditionalBollStrategy,
-    'MACD': MovingAverageConvergenceDivergenceStrategy
+    # 'USMA': UpdateSimpleMovingAverageStrategy,
+#     'SO': StochasticOscillatorStrategy,
+#     'OMA': OneMovingAverageStrategy,
+#     'TB': TraditionalBollStrategy,
+#     'MACD': MovingAverageConvergenceDivergenceStrategy
 }
 

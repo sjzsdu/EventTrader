@@ -4,15 +4,12 @@ import time
 from datetime import datetime
 from event_trader.config import CACHE_PATH, FETCHER_DEBOUNCE_TIME
 from event_trader.trading_time_checker import TradingTimeChecker
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from event_trader.stock_data import StockData
-    
 class BaseFetcher:
-    def __init__(self, stock_data: 'StockData', fileName='basic'):
-        self.stock_data = stock_data
-        self.csv_path = f"{CACHE_PATH}/{self.stock_data.code}/{fileName}.csv"
+    def __init__(self, symbol: str, *, main_path = None,  file_name='basic'):
+        self.symbol = symbol
+        self.main_path = main_path or CACHE_PATH
+        self.csv_path = f"{self.main_path}/{self.symbol}/{file_name}.csv"
         self.last_call_time = None
 
     def fetch_data(self):

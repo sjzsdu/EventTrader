@@ -3,7 +3,7 @@ from .base_strategy import BaseStrategy
 from event_trader.stock_data import StockData
 import mplfinance as mpf
 from event_trader.config import PRICE_COL
-
+from event_trader.utils import plot_line_chart
 DEFAULT_PARAMS = {
     'short_window': 5,
     'long_window': 20,
@@ -30,10 +30,20 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         super().__init__(stock_data, sub_path, _params, _params_range, None, factors)
 
     def calculate_factors(self):
-        short_window= self.parameters['short_window']
-        long_window= self.parameters['long_window']
+        short_window = self.parameters['short_window']
+        long_window = self.parameters['long_window']
+        
+        # 计算短期和长期移动平均
         self.data['short_mavg'] = self.data[PRICE_COL].rolling(window=short_window).mean()
         self.data['long_mavg'] = self.data[PRICE_COL].rolling(window=long_window).mean()
+        
+       # 使用单独的变量来存储列，然后进行填充
+        short_mavg_derivative = self.data['short_mavg'].diff()
+        self.data['short_mavg_derivative'] = short_mavg_derivative.fillna(0)
+
+        long_mavg_derivative = self.data['long_mavg'].diff()
+        self.data['long_mavg_derivative'] = long_mavg_derivative.fillna(0)
+
         
     def validate_parameter(self, parameters):
         if parameters['short_window'] >= parameters['long_window']:
@@ -52,6 +62,7 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         last = self.data.iloc[i-1]
         if  pd.isna(last['short_mavg']) or pd.isna(last['long_mavg']):
             return False
+        # return row['short_mavg_derivative'] > 0 and row['long_mavg_derivative'] > 0
         return self.should_buy(row) and last['short_mavg'] < last['long_mavg']
 
     def sell_signal(self, row, i) -> bool:
@@ -60,6 +71,7 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         last = self.data.iloc[i-1]
         if  pd.isna(last['short_mavg']) or pd.isna(last['long_mavg']):
             return False
+        # return row['short_mavg_derivative'] < 0 and row['long_mavg_derivative'] > 0
         return self.should_sell(row)
         
     def get_plots(self, data):
@@ -67,5 +79,10 @@ class SimpleMovingAverageStrategy(BaseStrategy):
             mpf.make_addplot(data['short_mavg'], width=0.8, color='blue', label=f'{self.short_window}-Day MA'),
             mpf.make_addplot(data['long_mavg'], width=0.8, color='orange', label=f'{self.long_window}-Day MA')
         ]
+        
+    def show_factors(self):
+        plot_line_chart(
+            self.data, ['short_mavg_derivative', 'long_mavg_derivative'],
+            title='Moving avarage derivative',  ylabel= 'derivative')
 
 

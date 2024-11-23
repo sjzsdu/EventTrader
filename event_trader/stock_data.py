@@ -2,10 +2,8 @@ from datetime import datetime, timedelta
 from event_trader.config import HISTORY_DAYS
 from event_trader.fetchers import StockHistFetcher, StockInfoFetcher, StockChipFetcher, StockRealtimeFetcher
 class StockData:
-    # Class variable to cache trade dates
-    trade_dates_cache = None
 
-    def __init__(self, code, start_date=None, end_date=None, days=None, period="daily", adjust="qfq"):
+    def __init__(self, code, type="stock", start_date=None, end_date=None, days=None, period="daily", adjust="qfq"):
         self.code = code
         self.period = period
         self.adjust = adjust
@@ -20,7 +18,7 @@ class StockData:
             'stock_hist': StockHistFetcher(self),
             'stock_info': StockInfoFetcher(self),
             'stock_realtime': StockRealtimeFetcher(self),
-            'stock_chip': StockChipFetcher(self)
+            'stock_chip': StockChipFetcher(self),
         }
         
     def get_data(self, data_type: str):

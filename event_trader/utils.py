@@ -72,3 +72,38 @@ def is_index(stock_code):
     :return: bool, True 表示是指数，False 表示是个股
     """
     return is_stock_or_index(stock_code) =='index'
+
+import pandas as pd
+import matplotlib.pyplot as plt
+def plot_line_chart(df: pd.DataFrame, columns: list[str], title='Line Chart', ylabel='Y-axis', figsize=(10, 6)):
+    """
+    绘制折线图的函数。
+
+    参数:
+    - df: Pandas DataFrame，包含数据的DataFrame。
+    - x_column: str, 用作x轴的列名。
+    - y_columns: list of str, 用作y轴的列名列表。
+    - title: str, 图表的标题。
+    - xlabel: str, x轴的标签。
+    - ylabel: str, y轴的标签。
+    - figsize: tuple, 图表的大小。
+
+    返回:
+    - None
+    """
+    df['日期'] = pd.to_datetime(df['日期'])
+    plt.figure(figsize=figsize)
+    for column in columns:
+        plt.plot(df['日期'], df[column], label=column)
+
+    # 添加标题和标签
+    plt.title(title)
+    plt.xlabel('Date')
+    plt.ylabel(ylabel)
+
+    plt.xticks(rotation=45)
+    plt.legend()
+
+    # 显示图形
+    plt.tight_layout()
+    plt.show()
