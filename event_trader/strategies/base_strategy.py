@@ -69,8 +69,8 @@ class BaseStrategy(ABC):
     def validate_parameter(self, parameters):
         return True
         
-    def optimize_parameters(self, params_range=None, params_step=None, force_optimize=False):
-        if (self.check_params_exists() and not force_optimize):
+    def optimize_parameters(self, params_range=None, params_step=None, no_optimize= True, force_optimize=False):
+        if (no_optimize or (self.check_params_exists() and not force_optimize)):
             self.calculate_factors()
             self.account = self.calculate_profit()
             return self

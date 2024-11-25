@@ -4,20 +4,29 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class StocksManager:
-    def __init__(self, symbols = None, index = None, limit = None, strategy_kwargs = {}):
+    def __init__(self, symbols = None, index = None, start = None, limit = None, stock_kwargs = {}):
         self.stocks: dict[str, StockInfo] = {}
         if symbols is not None:
             self.symbols = symbols
             for symbol in symbols:
                 self.stocks[symbol] = StockInfo(symbol)
-        if index is not None:
-            self.stock_market = StockMarket(symbol=index)
-            i = 0
-            for symbol in self.stock_market['index_codes']:
-                if limit is not None and i > limit:
-                    break
-                self.stocks[symbol] = StockInfo(symbol, **strategy_kwargs)
-                i = i + 1
+        if index:
+            self.stock_market = StockMarket(index)
+            codes = self.stock_market['index_codes']
+
+            # 当 start 或 limit 为 None 时的处理
+            if start is None:
+                start = 0
+            if limit is None:
+                limit = len(codes)
+
+            # 确保 limit 不超过列表的长度
+            actual_limit = min(start + limit, len(codes))
+
+            for i in range(start, actual_limit):
+                symbol = codes[i]
+                if symbol not in self.stocks:
+                    self.stocks[symbol] = StockInfo(symbol, **stock_kwargs)
         
         
     def get_stock_info(self, symbol):

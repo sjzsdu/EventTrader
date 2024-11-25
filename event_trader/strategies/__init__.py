@@ -5,6 +5,7 @@ from .stochastic_oscillator_strategy import StochasticOscillatorStrategy
 from .one_moving_average_strategy import OneMovingAverageStrategy
 from .traditional_boll_strategy import TraditionalBollStrategy
 from .moving_average_convergence_divergence_strategy import MovingAverageConvergenceDivergenceStrategy
+from .price_deviation_strategy import PriceDeviationStrategy
 
 STRATEGIES = {
     # 'SMA': SimpleMovingAverageStrategy,
