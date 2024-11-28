@@ -13,13 +13,13 @@ files = [
 
 [[package]]
 name = "akshare"
-version = "1.15.21"
+version = "1.15.34"
 description = "AKShare is an elegant and simple financial data interface library for Python, built for human beings!"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "akshare-1.15.21-py3-none-any.whl", hash = "sha256:a15e4d9200519ab1cba6d22d493f14cf7e47e41d85cb71723ca647004ab0d8a1"},
-    {file = "akshare-1.15.21.tar.gz", hash = "sha256:aadbe730840157baeeb254f3a5c6ed316c11a54eba09d5d78ef978df3ff3da16"},
+    {file = "akshare-1.15.34-py3-none-any.whl", hash = "sha256:88e2d8ac686a1eeffd7e6a18cd7c1d62201b577eb03ad224f9e35e5b6d6432a4"},
+    {file = "akshare-1.15.34.tar.gz", hash = "sha256:a0804eab8b3d10affe04c920f8a6323856c4a366d8c11173f2ee1aa4fccf1bb1"},
 ]
 
 [package.dependencies]
@@ -188,6 +188,21 @@ files = [
     {file = "charset_normalizer-3.4.0-py3-none-any.whl", hash = "sha256:fe9f97feb71aa9896b81973a7bbada8c49501dc73e58a10fcef6663af95e5079"},
     {file = "charset_normalizer-3.4.0.tar.gz", hash = "sha256:223217c3d4f82c3ac5e29032b3f1c2eb0fb591b72161f86d93f5719079dae93e"},
 ]
+
+[[package]]
+name = "china-stock-data"
+version = "0.1.2"
+description = ""
+optional = false
+python-versions = "<4.0,>=3.12"
+files = [
+    {file = "china_stock_data-0.1.2-py3-none-any.whl", hash = "sha256:f9fdbfdb738487c58debc65a93e26f3953bdb9e9f8e0aa0c3f138876e92f47cc"},
+    {file = "china_stock_data-0.1.2.tar.gz", hash = "sha256:91bc106a4278fcbd9c606e6ee26b20958a6aac46a02aa1d4b4f0222f584244dd"},
+]
+
+[package.dependencies]
+akshare = ">=1.15.32,<2.0.0"
+pandas = ">=2.2.3,<3.0.0"
 
 [[package]]
 name = "colorama"
@@ -1297,4 +1312,4 @@ test = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "00282b0d924c44fa0b7ee315f67b8934e372a9ca8cece4d5217a9f5b5621c6fa"
+content-hash = "0921d2be0e45fca36b7ae41ddc69c4df9b92b0174bcb5350614e3ae8b5e43f7f"

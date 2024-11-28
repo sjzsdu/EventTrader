@@ -1,6 +1,6 @@
 import pandas as pd
 from .base_strategy import BaseStrategy
-from event_trader.stock_data import StockData
+from china_stock_data import StockData
 import mplfinance as mpf
 
 

@@ -11,7 +11,7 @@ class BaseStrategy(ABC):
     def __init__(self, stock_data, sub_path, params, params_range, params_step, factors = []):
         self.stock_data = stock_data
         self.data = self.load_data()
-        self.params_path = os.path.join('params', sub_path, f'{self.stock_data.code}.csv')
+        self.params_path = os.path.join('params', sub_path, f'{self.stock_data.symbol}.csv')
         self.params = params
         self.params_range = params_range
         self.params_step = params_step
@@ -23,7 +23,7 @@ class BaseStrategy(ABC):
         self.account = self.calculate_profit()
     
     def load_data(self):
-        return self.stock_data.hist.copy()
+        return self.stock_data.kline
 
     def check_params_exists(self):
         """检查self.params_path文件是否存在"""

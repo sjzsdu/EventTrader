@@ -1,5 +1,5 @@
 from event_trader.strategies import BaseStrategy, OneMovingAverageStrategy
-from event_trader import StockData
+from china_stock_data import StockData
 from event_trader.utils import get_first_line
 import pandas as pd
 

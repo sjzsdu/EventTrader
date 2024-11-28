@@ -6,3 +6,5 @@ params
 **/__pycache__/*.*
 dist
 index
+api_dict.json
+app_dict.json

@@ -1,5 +1,5 @@
 from event_trader.stock_info import StockInfo
-from event_trader.stock_market import StockMarket
+from china_stock_data import StockMarket
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
