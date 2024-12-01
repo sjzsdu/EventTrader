@@ -10,7 +10,7 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (3, 80)
+    'window': (5, 80)
 }
 
 class OneMovingAverageStrategy(BaseStrategy):

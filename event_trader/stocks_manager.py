@@ -34,16 +34,18 @@ class StocksManager:
             return self.stocks[symbol]  
         return None
     
-    def show(self, **kwargs):
+    def show(self, symbols = None, **kwargs):
         for symbol, stock in self.stocks.items():
+            if symbols is not None and symbol not in symbols:
+                continue
             stock.show(**kwargs)
     
-    def get_result(self):
+    def get_result(self, opt_kwargs = {}):
         dataframes = []
 
         # 定义一个函数来获取结果并添加符号
         def fetch_result(symbol, item):
-            df = item.get_result()
+            df = item.get_result(opt_kwargs = opt_kwargs)
             df['symbol'] = symbol
             return df
 

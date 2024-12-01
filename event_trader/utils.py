@@ -32,24 +32,30 @@ import matplotlib.pyplot as plt
 
 def is_continuous_growth(volume_series, n):
     """
-    判断最后n个数据是否连续增长
+    判断最后n个数据是否连续增长。
 
-    :param volume_series: 成交量的Series
+    :param volume_series: 成交量的Pandas Series
     :param n: 要判断的最后几个数据
     :return: 如果连续增长返回True，否则返回False
     """
+    # 检查输入是否至少有n个数据点
     if len(volume_series) < n:
         return False
 
     # 获取最后n个数据
-    last_n = volume_series[-n:]
+    last_n = volume_series.tail(n)  # 使用 .tail() 方法获取最后n个数据
 
     # 检查是否每个元素都大于前一个
     for i in range(1, len(last_n)):
-        if last_n[i] <= last_n[i - 1]:
+        if last_n.iloc[i] <= last_n.iloc[i-1]:
             return False
 
     return True
+
+def percent_change(current, previous):
+    if previous == 0:
+        return 0
+    return ((current - previous) / previous) * 100
 
 def plot_line_chart(df: pd.DataFrame, columns: list[str], title='Line Chart', ylabel='Y-axis', figsize=(10, 6)):
     """

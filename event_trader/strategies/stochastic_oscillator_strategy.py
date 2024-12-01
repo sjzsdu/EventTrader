@@ -73,7 +73,6 @@ class StochasticOscillatorStrategy(BaseStrategy):
         high = data['最高'].max()
         lower = data['最低'].max()
         ratio = (high - lower) / 100
-        print(ratio)
         return [
             mpf.make_addplot(data['K'] * ratio, color='blue', width=1, label='K'),
             mpf.make_addplot(data['D'] * ratio, color='orange', width=1, label='D'),

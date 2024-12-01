@@ -131,7 +131,7 @@ class BaseStrategy(ABC):
     
     def plot_basic(self, days = CURRENT_DAYS, add_plots=None, title=None, volume_width=0.5, **kwargs):
         if title is None:
-            title = f"{self.stock_data.code} {self.__class__.__name__} Figure"
+            title = f"{self.stock_data.symbol} {self.__class__.__name__} Figure, profit = {friendly_number(self.account.get_profit())}"
         if add_plots is None:
             add_plots = []
         stock_data_copy = self.data.copy().tail(days)
@@ -165,7 +165,6 @@ class BaseStrategy(ABC):
                 bar.set_color('red')  # Up color
             else:
                 bar.set_color('green')  # Down color
-        print(f"Optimized parameters: {self.parameters}, Profit = {self.account.get_profit()}")
         return self.after_plot(fig, axes, days = days,  **kwargs)
     
     def after_plot(self, fig, axes, days= CURRENT_DAYS, **kwargs):
