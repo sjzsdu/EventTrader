@@ -1,4 +1,5 @@
 from event_trader.stock_info import StockInfo
+from event_trader.utils import is_a_share
 from china_stock_data import StockMarket
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -26,7 +27,8 @@ class StocksManager:
             for i in range(start, actual_limit):
                 symbol = codes[i]
                 if symbol not in self.stocks:
-                    self.stocks[symbol] = StockInfo(symbol, **stock_kwargs)
+                    if is_a_share(symbol):
+                        self.stocks[symbol] = StockInfo(symbol, **stock_kwargs)
         
         
     def get_stock_info(self, symbol):

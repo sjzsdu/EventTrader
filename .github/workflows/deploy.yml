@@ -28,11 +28,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          poetry install
-
-      - name: Update version
-        run: |
-          poetry version patch  # 或者使用 `minor` 或 `major` 来更新版本号
 
       - name: Publish to PyPI
         env:

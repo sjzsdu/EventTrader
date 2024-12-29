@@ -29,20 +29,11 @@ class MovingAverageConvergenceDivergenceStrategy(BaseStrategy):
         
     def calculate_factors(self):
         data = self.data
-
-        # 计算快速指数移动平均 (EMA)
+        # 使用pandas的向量化操作
         data['EMA_short'] = data[PRICE_COL].ewm(span=self.short, adjust=False).mean()
-
-        # 计算慢速指数移动平均 (EMA)
         data['EMA_long'] = data[PRICE_COL].ewm(span=self.long, adjust=False).mean()
-
-        # DIF线 = 快速EMA - 慢速EMA
         data['DIF'] = data['EMA_short'] - data['EMA_long']
-
-        # DEA线 = DIF的中位EMA
         data['DEA'] = data['DIF'].ewm(span=self.middle, adjust=False).mean()
-
-        # MACD柱状图 (也称为BAR) = (DIF - DEA) * 2
         data['MACD'] = 2 * (data['DIF'] - data['DEA'])
         
     def validate_parameter(self, parameters):

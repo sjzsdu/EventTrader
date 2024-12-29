@@ -1,11 +1,11 @@
 .pytest_cache
-.pbynb_checkpoints
+**/.pbynb_checkpoints
 **/*.ipynb
 cache
 params
 **/__pycache__/*.*
 dist
 index
-api_dict.json
 app_dict.json
 api_dict.json
+event_trader/huntings/.ipynb_checkpoints/

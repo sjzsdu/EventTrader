@@ -48,76 +48,51 @@ class BaseStrategy(ABC):
         df.to_csv(self.params_path, index=False)
 
     def calculate_profit(self) -> DemoAccount:
-        account = DemoAccount(initial_cash=1000000)  # 初始化DemoAccount实例
-        for index, row in self.data.iterrows():
-            if self.buy_signal(row, index):
-                account.buy(row, index)
-            elif self.sell_signal(row, index):
-                account.sell(row, index)
-
-        # 检查是否还有未卖出的股票
-        for symbol, shares in account.holdings.items():
-            if shares > 0:
-                # 在最后一个数据行处卖出所有持有的股票
-                last_index = len(self.data) - 1
-                last_row = self.data.iloc[last_index]
-                if last_row.get(SYMBOL_COL) == symbol:  # 确保符号匹配
-                    account.sell(last_row, last_index, position=1.0)
-
-        return account
+        try:
+            account = DemoAccount(initial_cash=1000000)
+            for index, row in self.data.iterrows():
+                if self.buy_signal(row, index):
+                    account.buy(row, index)
+                elif self.sell_signal(row, index):
+                    account.sell(row, index)
+            return account
+        except Exception as e:
+            raise StrategyError(f"计算利润时发生错误: {str(e)}")
     
     def validate_parameter(self, parameters):
+        """增强参数验证"""
+        # 检查参数是否在有效范围内
+        for param, value in parameters.items():
+            if param in self.params_range:
+                min_val, max_val = self.params_range[param]
+                if not min_val <= value <= max_val:
+                    return False
         return True
         
-    def optimize_parameters(self, params_range=None, params_step=None, no_optimize= True, force_optimize=False):
-        if (no_optimize or (self.check_params_exists() and not force_optimize)):
-            self.calculate_factors()
-            self.account = self.calculate_profit()
-            return self
-        
-        if params_range is not None:
-            self.params_range = {**self.params_range, **params_range}
-        if params_step is not None:
-            self.params_step = {**self.params_step, **params_step}
-        else:
-            self.params_step = {param: 1 for param in self.params_range}  # 默认步长为 1
-        
-        best_profit = -np.inf
-        best_parameters = self.parameters.copy()
-        
-        import itertools
-        param_names = list(self.params_range.keys())
-        param_ranges = [
-            np.arange(self.params_range[param][0], 
-                    self.params_range[param][1], 
-                    self.params_step.get(param, 1))  # 使用 np.arange 来支持浮点数
-            for param in param_names
-        ]
-        
-        for param_combination in itertools.product(*param_ranges):
-            # 更新参数
-            for i, param_name in enumerate(param_names):
-                self.parameters[param_name] = param_combination[i]
-            
-            if self.validate_parameter(self.parameters):
-                # 计算因子和利润
-                self.calculate_factors()
-                account = self.calculate_profit()
-                profit = account.get_profit()
-                # 更新最佳参数
-                if profit > best_profit:
-                    best_profit = profit
-                    best_parameters = self.parameters.copy()
-                    self.account = account
-        
-        # 更新为最佳参数
-        self.parameters = best_parameters
-        print(f"Optimized parameters: {self.parameters}, Profit = {best_profit}")
-        self.save_parameters()
-        return self
+    def optimize_parameters(self, method='grid', **kwargs):
+        """支持多种优化方法"""
+        if method == 'grid':
+            return self._grid_search(**kwargs)
+        elif method == 'random':
+            return self._random_search(**kwargs)
+        elif method == 'bayesian':
+            return self._bayesian_optimization(**kwargs)
     
     def get_plots(self, data):
-        return []
+        """增加更多可视化选项"""
+        plots = []
+        for factor in self.factors:
+            if factor in data.columns:
+                plots.append(
+                    mpf.make_addplot(
+                        data[factor],
+                        width=0.8,
+                        panel=self.get_plot_panel(factor),
+                        color=self.get_plot_color(factor),
+                        label=f'{factor}'
+                    )
+                )
+        return plots
     
     
     def show(self, days = CURRENT_DAYS, **kwargs):
@@ -291,3 +266,33 @@ class BaseStrategy(ABC):
 
     def show_factors(self) -> bool:
         pass
+
+    def check_signal(self, row, i, condition_func):
+        """通用的信号检查逻辑"""
+        if i == 0 or any(pd.isna(row[factor]) for factor in self.factors):
+            return False
+        return condition_func(row, self.data.iloc[i-1])
+
+    def calculate_metrics(self):
+        """计算策略性能指标"""
+        metrics = {
+            'total_return': self.account.get_profit(),
+            'win_rate': self.calculate_win_rate(),
+            'sharpe_ratio': self.calculate_sharpe_ratio(),
+            'max_drawdown': self.calculate_max_drawdown()
+        }
+        return metrics
+
+class StrategyError(Exception):
+    """策略相关错误"""
+    pass
+
+class CompositeStrategy(BaseStrategy):
+    """组合多个策略"""
+    def __init__(self, strategies, combination_rule='AND'):
+        self.strategies = strategies
+        self.combination_rule = combination_rule
+        
+    def buy_signal(self, row, i):
+        signals = [strategy.buy_signal(row, i) for strategy in self.strategies]
+        return all(signals) if self.combination_rule == 'AND' else any(signals)

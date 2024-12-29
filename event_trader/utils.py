@@ -27,6 +27,23 @@ def get_first_line(text):
     # 返回第一行，如果没有有效行则返回空字符串
     return lines[0] if lines else ''
 
+def is_a_share(stock_code):
+    """
+    判断给定的股票代码是否是A股代码且不含字母。
+
+    Args:
+    stock_code (str): 股票代码
+
+    Returns:
+    bool: 如果是A股代码且不含字母则返回True，否则返回False
+    """
+    # 检查股票代码长度是否为6位，且全部由数字组成
+    if len(stock_code) == 6 and stock_code.isdigit():
+        # 检查股票代码是否以0, 3, 6开头
+        if stock_code.startswith(("0", "3", "6")):
+            return True
+    return False
+
 import pandas as pd
 import matplotlib.pyplot as plt
 

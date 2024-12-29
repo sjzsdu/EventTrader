@@ -31,26 +31,16 @@ class EndHunting:
     
     
     def stock_hunting(self, stock: StockData):
-        print(stock.symbol, stock['涨幅'])
-        if stock['涨幅'] < 3 or stock['涨幅'] > 5:
-            return False
-        print('>', stock.symbol)
         if stock['量比'] <  1:
             return False
-        print('>>', stock.symbol)
         if stock['换手'] < 5 or stock['换手'] > 10:
             return False
-        print('>>>', stock.symbol)
-        if stock['流通市值'] < 5e9 or stock['流通市值'] > 1e10:
-            return False
         
-        print('>>>>', stock.symbol)
         kline_data = stock.kline
         volumn = kline_data['成交量']
-        if not is_continuous_growth(volumn, 4):
+        if not is_continuous_growth(volumn, 3):
             return False
-        print('>>>>++', stock.symbol)
-        return False
+        return True
         
     def get_result(self):
         stocks = []
