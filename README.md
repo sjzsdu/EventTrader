@@ -1,64 +1,82 @@
-# 量化分析工具
+```markdown
+# 股票交易策略系统
 
-本项目是一个量化分析的工具，感谢akshare提供了财经数据接口，本项目是基于akshare提供的A股数据来对各种交易策略进行收益分析的工具，还提供了按照策略提供选股的功能。
+## 项目意图
 
-## 功能
+本项目旨在提供一个灵活的股票交易策略框架，允许用户通过多种策略对股票进行分析和交易。该系统支持多种技术指标和策略，用户可以根据自己的需求进行优化和调整。
 
-- **股票数据获取**：高效获取实时和历史股票数据，以进行分析和策略制定。
-- **策略开发**：轻松创建和优化买卖策略。
-- **回测**：在历史数据上测试您的策略，以评估其潜在盈利能力。
-- **参数优化**：微调个股参数，以提高交易指标的准确性。
-- **个性化策略开发**：提供选股策略的开发和验证服务，满足用户特定需求。
-- **策略组合管理**：支持多组策略对多只股票同时监测，实现在买入点或卖出点的仓位控制和管理。
-- **消息推送功能**：通过订阅功能，当捕捉到买卖点时发送通知。
+## 项目特点
 
-## 安装
+- **多策略支持**：内置多种交易策略，包括布林带、KDJ、MACD、移动平均等，用户可以根据市场情况选择合适的策略。
+- **灵活的参数优化**：支持对策略参数进行优化，帮助用户找到最佳的交易参数。
+- **模拟交易账户**：提供模拟账户功能，用户可以在不承担风险的情况下测试策略的有效性。
+- **数据可视化**：使用mplfinance库进行数据可视化，帮助用户更直观地理解市场动态。
+- **多线程处理**：使用线程池来提高数据处理效率，支持并发获取多个股票的数据。
+
+## 功能概述
+
+- **股票数据管理**：通过`StocksManager`类管理股票数据，支持从不同的股票市场获取数据。
+- **策略实现**：每种策略都继承自`BaseStrategy`类，用户可以自定义自己的策略。
+- **账户管理**：`DemoAccount`类用于管理模拟交易账户，包括买入、卖出、计算利润等功能。
+- **结果展示**：提供结果展示功能，用户可以查看每种策略的表现和相关指标。
+
+## 安装与使用
+
+### 安装依赖
+
+在使用本项目之前，请确保安装了以下依赖库：
 
 ```bash
-pip install event-trader
+pip install pandas mplfinance china-stock-data
 ```
 
-## 使用
+### 使用步骤
 
-### 个股
-1. 个股主要使用StockInfo这个类，可以通过get_result方法获得各个策略的近一年时间中的交易机会以及收益
-![strategy profit](/assets/stock-profit.png)
-表中的profit是近一年按照该策略交易的预计收益, parameters是调优后的参数。
-```python
-from event_trader import StockInfo
-from event_trader.strategies import SimpleMovingAverageStrategy, UpdateSimpleMovingAverageStrategy,StochasticOscillatorStrategy, OneMovingAverageStrategy, TraditionalBollStrategy, MovingAverageConvergenceDivergenceStrategy
+1. **克隆项目**
 
-STRATEGIES = {
-    'SMA': SimpleMovingAverageStrategy,
-    'USMA': UpdateSimpleMovingAverageStrategy,
-    'SO': StochasticOscillatorStrategy,
-    'OMA': OneMovingAverageStrategy,
-    'TB': TraditionalBollStrategy,
-    'MACD': MovingAverageConvergenceDivergenceStrategy
-}
-stock = StockInfo('601688', strategies = STRATEGIES)
-stock.get_result()
-```
-2. 显示策略的买卖点
-![strategy buy and sell](/assets/strategy-buy-sell.png)
-stock.SMA.show() 调用这个方法可以用来显示K线图，以及策略中的计算因子和买卖点，凭此可以验证交易策略的收益情况
-stock.SMA.account.transactions 可以查看策略的具体交易信息。
+   ```bash
+   git clone https://github.com/yourusername/stock-trading-strategy.git
+   cd stock-trading-strategy
+   ```
 
-### 自选股
+2. **创建股票数据实例**
 
-### 板块
+   ```python
+   from event_trader.stocks_manager import StocksManager
 
-## 开发计划
-- **选股策略开发**：正在开发更多的选股策略。如有需求，请联系我以开发和验证个性化的策略。
-- **消息推送功能**：计划增加推送功能，当捕捉到买卖点后能够发送消息给订阅者。
-- **策略组合功能**：将实现策略组合的功能，支持多组策略对多只股票的监测和仓位管理。
+   # 创建股票管理实例
+   manager = StocksManager(symbols=['601688', '000001'], index='沪深300')
+   ```
+
+3. **选择策略并进行优化**
+
+   ```python
+   from event_trader.strategies.boll_strategy import BollStrategy
+
+   # 选择布林带策略
+   strategy = BollStrategy(manager.stock_data)
+   strategy.optimize_parameters()
+   ```
+
+4. **进行模拟交易**
+
+   ```python
+   account = strategy.calculate_profit()
+   print(f"模拟交易利润: {account.get_profit()}%")
+   ```
+
+5. **可视化结果**
+
+   ```python
+   strategy.show()
+   ```
+
+## 贡献
+
+欢迎任何形式的贡献！如果您有建议或发现了问题，请提交issue或pull request。
 
 ## 许可证
 
-本项目根据 [MIT 许可证](https://opensource.org/licenses/MIT) 授权。
+本项目采用MIT许可证，详细信息请查看LICENSE文件。
+```
 
-## 联系
-
-如有问题或反馈，请联系：122828837@qq.com。
-
-祝交易顺利！

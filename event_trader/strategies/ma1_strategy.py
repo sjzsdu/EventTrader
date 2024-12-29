@@ -9,7 +9,7 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (3, 50)
+    'window': (3, 30)
 }
 
 class MA1Strategy(BaseStrategy):
@@ -23,7 +23,7 @@ class MA1Strategy(BaseStrategy):
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'moving_average', _params, _params_range, None, ['moving_avg'])
+        super().__init__(stock_data, MA1Strategy.name, _params, _params_range, None, ['moving_avg'])
         
     def calculate_factors(self):
         window = self.parameters['window']

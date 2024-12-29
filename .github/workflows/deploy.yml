@@ -28,6 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          poetry install
 
       - name: Publish to PyPI
         env:

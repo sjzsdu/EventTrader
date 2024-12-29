@@ -239,9 +239,9 @@ class BaseStrategy(ABC):
         return fig, axes
 
     def status(self):
-        if self.should_buy(self.data.iloc[-1]):
+        if self.buy_signal(self.data.iloc[-1], len(self.data) - 1):
             return "Buy"
-        if self.should_sell(self.data.iloc[-1]):
+        if self.sell_signal(self.data.iloc[-1], len(self.data) - 1):
             return "Sell"
         return 'None'
 
@@ -271,18 +271,13 @@ class BaseStrategy(ABC):
         """Define the sell signal logic."""
         pass
     
+    
     def get_factors(self):
         row = self.data.iloc[-1]
         dic = {}
         for factor in self.factors:
             dic[factor] = friendly_number(row[factor])
         return dic
-
-    def should_buy(self, row) -> bool:
-        return False
-
-    def should_sell(self, row) -> bool:
-        return False
     
     @abstractmethod
     def calculate_factors(self):

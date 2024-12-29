@@ -11,12 +11,12 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (5, 80),
-    "std": (0.1, 2)
+    'window': (5, 30),
+    "std": (0.5, 3)
 }
 
 DEFAULT_PARAMS_STEP = {
-    'std': 0.1
+    'std': 0.2
 }
 
 class BollStrategy(BaseStrategy):
@@ -34,7 +34,7 @@ class BollStrategy(BaseStrategy):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
         _params_step = params_step if params_step is not None else DEFAULT_PARAMS_STEP
-        super().__init__(stock_data, 'traditional_boll', _params, _params_range, _params_step, ['moving_avg', 'upper', 'down'])
+        super().__init__(stock_data, BollStrategy.name, _params, _params_range, _params_step, ['moving_avg', 'upper', 'down'])
         
     def calculate_factors(self):
         window = self.parameters['window']
@@ -46,24 +46,18 @@ class BollStrategy(BaseStrategy):
         self.data['upper'] = self.data['moving_avg'] + (self.data['std'] * self.parameters['std'])
         self.data['down'] = self.data['moving_avg'] - (self.data['std'] * self.parameters['std'])
         
-    def should_buy(self, row):
-        return self.buy_signal(row, self.data.index.get_loc(row.name))
-    
-    def should_sell(self, row):
-        return self.sell_signal(row, self.data.index.get_loc(row.name))
-
     def buy_signal(self, row, i) -> bool:
         # 确保布林带数据有效
         if i == 0 or pd.isna(row['down']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_buy(row)
+        return row[PRICE_COL] <= row['down']
 
     def sell_signal(self, row, i) -> bool:
         if i==0 or pd.isna(row['upper']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_sell(row)
+        return row[PRICE_COL] >= row['upper']
 
     def get_plots(self, data):
         return [

@@ -19,20 +19,30 @@ class StockInfo:
     
     
     def show(self, **kwargs):
+        results = []
         for key, item in self.strategies.items():
-            item.show(**kwargs)
+            result = item.show(**kwargs)
+            results.append({
+                "name": key,
+                "result": result
+            })
+        return results
             
-    def get_result(self, opt_kwargs = {}):
+    def get_result(self, **opt_kwargs):
         arr = []
         for key, item in self.strategies.items():
             item.optimize_parameters(**opt_kwargs)
+            profit = item.calculate_profit()
+            factors = item.get_factors()
+            
             arr.append({
                 "name": key,
                 "description": get_first_line(item.__doc__),
                 "parameters": item.parameters,
                 'status': item.status(),
                 'profit': item.account.get_profit(),
-                'data': item.get_factors()
+                'data': factors,
+                'calculated_profit': profit
             })
         return pd.DataFrame(arr)
 

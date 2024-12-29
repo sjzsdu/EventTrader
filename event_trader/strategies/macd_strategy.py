@@ -19,13 +19,14 @@ DEFAULT_PARAMS_RANGE = {
 
 
 class MACDStrategy(BaseStrategy):
+    name = 'macd'
     """
     MACD 移动平均线收敛/发散指标（Moving Average Convergence Divergence）
     """
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'moving_average_convergence_divergence', _params, _params_range, None, ['DIF', 'DEA', 'MACD'])
+        super().__init__(stock_data, MACDStrategy.name, _params, _params_range, None, ['DIF', 'DEA', 'MACD'])
         
     def calculate_factors(self):
         data = self.data
@@ -41,12 +42,6 @@ class MACDStrategy(BaseStrategy):
             return False
         return True 
     
-    def should_buy(self, row):
-        return self.buy_signal(row, self.data.index.get_loc(row.name))
-    
-    def should_sell(self, row):
-        return self.sell_signal(row, self.data.index.get_loc(row.name))
-
     def buy_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['DIF']) or pd.isna(row['DEA']):
             return False

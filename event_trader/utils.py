@@ -1,3 +1,11 @@
+import hashlib
+
+def generate_short_md5(input_string, len = 8):
+    md5_hash = hashlib.md5()
+    md5_hash.update(input_string.encode('utf-8'))
+    return md5_hash.hexdigest()[:len]
+
+
 def friendly_number(number, decimal_places=2):
     """
     将一个数值转换为比较友好的格式，用亿和万为单位，并支持指定小数点位数。
@@ -22,8 +30,12 @@ def friendly_number(number, decimal_places=2):
         return f"{num:.{decimal_places}f}"
 
 def get_first_line(text):
-    # 使用 splitlines() 分割字符串，然后使用列表解析去除每行首尾空格并过滤掉空行
-    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    # 检查 text 是否为 None
+    if text is None:
+        return ''  # 返回空字符串或其他默认值
+
+    # 使用 splitlines() 分割字符串，然后使用列表解析去除每行首尾空格并过滤空行
+    lines = [line for line in text.splitlines() if line.strip()]
     # 返回第一行，如果没有有效行则返回空字符串
     return lines[0] if lines else ''
 

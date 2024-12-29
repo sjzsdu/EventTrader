@@ -14,6 +14,7 @@ DEFAULT_PARAMS_RANGE = {
 }
 
 class VMAStrategy(BaseStrategy):
+    name = 'vma'
     """
     成交量或者换手率指标。
     成交量大于移动平均线的2倍;
@@ -22,18 +23,12 @@ class VMAStrategy(BaseStrategy):
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'volume_moving_average', _params, _params_range, None, ['moving_avg'])
+        super().__init__(stock_data, VMAStrategy.name, _params, _params_range, None, ['moving_avg'])
         
     def calculate_factors(self):
         window = self.parameters['window']
         self.data['moving_avg'] = self.data['成交量'].rolling(window=window).mean()
         
-    def should_buy(self, row):
-        return self.buy_signal(row, self.data.index.get_loc(row.name))
-    
-    def should_sell(self, row):
-        return self.sell_signal(row, self.data.index.get_loc(row.name))
-
     def buy_signal(self, row, i) -> bool:
         if i < self.window or pd.isna(row['moving_avg']):
             return False

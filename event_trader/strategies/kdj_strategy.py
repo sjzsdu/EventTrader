@@ -25,7 +25,7 @@ class KDJStrategy(BaseStrategy):
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'stochastic_oscillator', _params, _params_range, None, ['K', 'D', 'J'])
+        super().__init__(stock_data, KDJStrategy.name, _params, _params_range, None, ['K', 'D', 'J'])
         
     def calculate_factors(self):
         data = self.data

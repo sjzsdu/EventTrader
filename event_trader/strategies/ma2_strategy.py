@@ -20,6 +20,7 @@ DEFAULT_PARAMS_STEP = {
 }
 
 class MA2Strategy(BaseStrategy):
+    name = 'ma2'
     """
     移动平均价格：计算两个不同周期的移动平均值。
     当短周期的移动平均线高于长周期的移动平均线时，买入；
@@ -29,7 +30,7 @@ class MA2Strategy(BaseStrategy):
         if factors is None:
             factors = ['short_mavg', 'long_mavg']
         if sub_path is None:
-            sub_path = 'simple_moving_average'
+            sub_path = MA2Strategy.name
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
         _params_step = params_step if params_step is not None else DEFAULT_PARAMS_STEP
@@ -56,12 +57,6 @@ class MA2Strategy(BaseStrategy):
             return False
         return True
     
-    def should_buy(self, row):
-        return self.buy_signal(row, self.data.index.get_loc(row.name))
-    
-    def should_sell(self, row):
-        return self.sell_signal(row, self.data.index.get_loc(row.name))
-
     def buy_signal(self, row, i) -> bool:
         if i==0 or pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):
             return False

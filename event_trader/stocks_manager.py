@@ -1,53 +1,34 @@
 from event_trader.stock_info import StockInfo
-from event_trader.utils import is_a_share
-from china_stock_data import StockMarket
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
-
-class StocksManager:
-    def __init__(self, symbols = None, index = None, start = None, limit = None, stock_kwargs = {}):
+from .base_stocks import BaseStocks
+from .utils import generate_short_md5
+class StocksManager(BaseStocks):
+    def __init__(self, symbols=None, index=None, start=None, limit=None, **kwargs):
+        file_path =  generate_short_md5(f'{str(symbols)}-{str(index)}')
+        super().__init__(symbols=symbols, file_path=file_path, index=index, start=start, limit=limit, **kwargs)
         self.stocks: dict[str, StockInfo] = {}
-        if symbols is not None:
-            self.symbols = symbols
-            for symbol in symbols:
-                self.stocks[symbol] = StockInfo(symbol)
-        if index:
-            self.stock_market = StockMarket(index)
-            codes = self.stock_market['index_codes']
+        # 这里不再需要处理 symbols 和 index 的逻辑
+    def create_stock_instance(self, symbol, **kwargs):
+        return StockInfo(symbol, **kwargs)
 
-            # 当 start 或 limit 为 None 时的处理
-            if start is None:
-                start = 0
-            if limit is None:
-                limit = len(codes)
-
-            # 确保 limit 不超过列表的长度
-            actual_limit = min(start + limit, len(codes))
-
-            for i in range(start, actual_limit):
-                symbol = codes[i]
-                if symbol not in self.stocks:
-                    if is_a_share(symbol):
-                        self.stocks[symbol] = StockInfo(symbol, **stock_kwargs)
-        
-        
-    def get_stock_info(self, symbol):
-        if symbol in self.stocks:
-            return self.stocks[symbol]  
+    def get_stock_info(self, symbol, **kwargs):
+        if symbol in self.symbols:
+            return self.create_stock_instance(symbol, **kwargs)
         return None
     
-    def show(self, symbols = None, **kwargs):
+    def show(self, symbols=None, **kwargs):
         for symbol, stock in self.stocks.items():
             if symbols is not None and symbol not in symbols:
                 continue
             stock.show(**kwargs)
     
-    def get_result(self, opt_kwargs = {}):
+    def get_result(self, opt_kwargs={}):
         dataframes = []
 
         # 定义一个函数来获取结果并添加符号
         def fetch_result(symbol, item):
-            df = item.get_result(opt_kwargs = opt_kwargs)
+            df = item.get_result(opt_kwargs=opt_kwargs)
             df['symbol'] = symbol
             return df
 

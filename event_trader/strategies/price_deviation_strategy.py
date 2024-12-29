@@ -16,6 +16,7 @@ DEFAULT_PARAMS_RANGE = {
 }
 
 class PriceDeviationStrategy(BaseStrategy):
+    name = 'price_deviation'
     """
     股价偏移过大后会回归。
     股价降到移动平均价格下方的一定比例后触发回归，是买入的时机；
@@ -24,18 +25,12 @@ class PriceDeviationStrategy(BaseStrategy):
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'price_deviation', _params, _params_range, None, ['moving_avg'])
+        super().__init__(stock_data, PriceDeviationStrategy.name, _params, _params_range, None, ['moving_avg'])
         
     def calculate_factors(self):
         self.data['moving_avg'] = self.data[PRICE_COL].rolling(window=self.window).mean()
         self.data['percent'] = (self.data[PRICE_COL] - self.data['moving_avg']) * 100 / self.data['moving_avg']
         
-    def should_buy(self, row):
-        return self.buy_signal(row, self.data.index.get_loc(row.name))
-    
-    def should_sell(self, row):
-        return self.sell_signal(row, self.data.index.get_loc(row.name))
-
     def buy_signal(self, row, i) -> bool:
         if i < self.window + 2:
             return False
