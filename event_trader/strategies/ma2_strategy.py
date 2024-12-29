@@ -19,7 +19,7 @@ DEFAULT_PARAMS_STEP = {
     'long_window': 2,
 }
 
-class SimpleMovingAverageStrategy(BaseStrategy):
+class MA2Strategy(BaseStrategy):
     """
     移动平均价格：计算两个不同周期的移动平均值。
     当短周期的移动平均线高于长周期的移动平均线时，买入；
@@ -57,10 +57,10 @@ class SimpleMovingAverageStrategy(BaseStrategy):
         return True
     
     def should_buy(self, row):
-        return row['short_mavg'] >= row['long_mavg']  and  percent_change(row[PRICE_COL], (row['short_mavg'] + row['long_mavg']) / 2) < 3 and is_continuous_growth(self.data['成交量'], 3)
+        return self.buy_signal(row, self.data.index.get_loc(row.name))
     
     def should_sell(self, row):
-        return row['short_mavg'] <= row['long_mavg']
+        return self.sell_signal(row, self.data.index.get_loc(row.name))
 
     def buy_signal(self, row, i) -> bool:
         if i==0 or pd.isna(row['short_mavg']) or pd.isna(row['long_mavg']):

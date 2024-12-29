@@ -1,4 +1,4 @@
-from event_trader.strategies import BaseStrategy, OneMovingAverageStrategy, STRATEGIES
+from event_trader.strategies import BaseStrategy, STRATEGIES
 from china_stock_data import StockData
 from event_trader.utils import get_first_line
 import pandas as pd
@@ -9,8 +9,8 @@ class StockInfo:
         self.stock_data = StockData(symbol, **stock_kwargs)
         self.strategies: dict[str, BaseStrategy] = {}
         strategies = strategies if strategies is not None else STRATEGIES
-        for key, item in strategies.items():
-            self.strategies[key] = item(self.stock_data)
+        for strategy_class in strategies:
+            self.strategies[strategy_class.name] = strategy_class(self.stock_data)
             
     def __getattr__(self, key: str):
         if key in self.strategies:

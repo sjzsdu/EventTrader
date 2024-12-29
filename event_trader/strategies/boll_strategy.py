@@ -19,7 +19,8 @@ DEFAULT_PARAMS_STEP = {
     'std': 0.1
 }
 
-class TraditionalBollStrategy(BaseStrategy):
+class BollStrategy(BaseStrategy):
+    name = 'boll'
     """
     布林带（BOLL）
     中轨（中线） ：
@@ -46,10 +47,10 @@ class TraditionalBollStrategy(BaseStrategy):
         self.data['down'] = self.data['moving_avg'] - (self.data['std'] * self.parameters['std'])
         
     def should_buy(self, row):
-        return row[PRICE_COL] <= row['down']
+        return self.buy_signal(row, self.data.index.get_loc(row.name))
     
     def should_sell(self, row):
-        return row[PRICE_COL] >= row['upper']
+        return self.sell_signal(row, self.data.index.get_loc(row.name))
 
     def buy_signal(self, row, i) -> bool:
         # 确保布林带数据有效

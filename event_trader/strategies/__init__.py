@@ -1,18 +1,17 @@
 from .base_strategy import BaseStrategy
-from .simple_moving_average_strategy import SimpleMovingAverageStrategy
-from .update_simple_moving_average_strategy import UpdateSimpleMovingAverageStrategy
-from .stochastic_oscillator_strategy import StochasticOscillatorStrategy
-from .one_moving_average_strategy import OneMovingAverageStrategy
-from .traditional_boll_strategy import TraditionalBollStrategy
-from .moving_average_convergence_divergence_strategy import MovingAverageConvergenceDivergenceStrategy
+from .ma2_strategy import MA2Strategy
+from .kdj_strategy import KDJStrategy
+from .ma1_strategy import MA1Strategy
+from .boll_strategy import BollStrategy
+from .macd_strategy import MACDStrategy
 from .price_deviation_strategy import PriceDeviationStrategy
 
-STRATEGIES = {
-    'SMA': SimpleMovingAverageStrategy,
-    # 'USMA': UpdateSimpleMovingAverageStrategy,
-#     'SO': StochasticOscillatorStrategy,
-    # 'OMA': OneMovingAverageStrategy,
-#     'TB': TraditionalBollStrategy,
-#     'MACD': MovingAverageConvergenceDivergenceStrategy
-}
+STRATEGIES = [
+    MA2Strategy,
+    KDJStrategy,
+    MA1Strategy,
+    BollStrategy,
+    MACDStrategy,
+    PriceDeviationStrategy
+]
 

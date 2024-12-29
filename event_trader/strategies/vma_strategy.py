@@ -3,32 +3,30 @@ from .base_strategy import BaseStrategy
 from china_stock_data import StockData
 import mplfinance as mpf
 from event_trader.config import PRICE_COL
-
+from event_trader.utils import is_continuous_growth
 
 DEFAULT_PARAMS = {
-    'window': 5,
-    'percent': 10
+    'window': 5
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (5, 35),
-    'percent': (3, 20)
+    'window': (3, 50)
 }
 
-class PriceDeviationStrategy(BaseStrategy):
+class VMAStrategy(BaseStrategy):
     """
-    股价偏移过大后会回归。
-    股价降到移动平均价格下方的一定比例后触发回归，是买入的时机；
-    估计升到了移动平均价格上方一定比例后触发下调，是卖出的时机；
+    成交量或者换手率指标。
+    成交量大于移动平均线的2倍;
+    当价格低于移动平均线时，卖出。
     """
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
-        super().__init__(stock_data, 'price_deviation', _params, _params_range, None, ['moving_avg'])
+        super().__init__(stock_data, 'volume_moving_average', _params, _params_range, None, ['moving_avg'])
         
     def calculate_factors(self):
-        self.data['moving_avg'] = self.data[PRICE_COL].rolling(window=self.window).mean()
-        self.data['percent'] = (self.data[PRICE_COL] - self.data['moving_avg']) * 100 / self.data['moving_avg']
+        window = self.parameters['window']
+        self.data['moving_avg'] = self.data['成交量'].rolling(window=window).mean()
         
     def should_buy(self, row):
         return self.buy_signal(row, self.data.index.get_loc(row.name))
@@ -37,14 +35,13 @@ class PriceDeviationStrategy(BaseStrategy):
         return self.sell_signal(row, self.data.index.get_loc(row.name))
 
     def buy_signal(self, row, i) -> bool:
-        if i < self.window + 2:
+        if i < self.window or pd.isna(row['moving_avg']):
             return False
-        return row['percent'] <=  -self.percent
+        return row['成交量'] > 2 * row['moving_avg']
 
     def sell_signal(self, row, i) -> bool:
-        if i < self.window + 2:
+        if i < self.window + 3 or pd.isna(row['moving_avg']):
             return False
-        return row['percent'] >=  self.percent
     
     def get_plots(self, data):
         return [

@@ -18,7 +18,7 @@ DEFAULT_PARAMS_RANGE = {
 }
 
 
-class MovingAverageConvergenceDivergenceStrategy(BaseStrategy):
+class MACDStrategy(BaseStrategy):
     """
     MACD 移动平均线收敛/发散指标（Moving Average Convergence Divergence）
     """
@@ -42,10 +42,10 @@ class MovingAverageConvergenceDivergenceStrategy(BaseStrategy):
         return True 
     
     def should_buy(self, row):
-        return row['DIF'] > row['DEA']
+        return self.buy_signal(row, self.data.index.get_loc(row.name))
     
     def should_sell(self, row):
-        return row['DIF'] < row['DEA']
+        return self.sell_signal(row, self.data.index.get_loc(row.name))
 
     def buy_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['DIF']) or pd.isna(row['DEA']):

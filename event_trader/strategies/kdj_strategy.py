@@ -17,7 +17,8 @@ DEFAULT_PARAMS_RANGE = {
 }
 
 
-class StochasticOscillatorStrategy(BaseStrategy):
+class KDJStrategy(BaseStrategy):
+    name = 'kdj'
     """
     KDJ指标, 随机振荡器
     """
@@ -51,23 +52,17 @@ class StochasticOscillatorStrategy(BaseStrategy):
         # 计算J值
         data['J'] = 3.0 * data['K'] - 2.0 * data['D']
 
-    def should_buy(self, row):
-        return row['K'] >= row['D']
-    
-    def should_sell(self, row):
-        return row['K'] <= row['D']
-
     def buy_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['K']) or pd.isna(row['D']):
             return False
         last = self.data.iloc[i-1]
-        return self.should_buy(row) and self.should_sell(last) and row['K'] < 50
+        return row['K'] >= row['D'] and last['K'] < last['D'] and row['K'] < 50
 
     def sell_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['K']) or pd.isna(row['D']):
-             return False
+            return False
         last = self.data.iloc[i-1]
-        return self.should_sell(row) and self.should_buy(last) and row['K'] > 50
+        return row['K'] <= row['D'] and last['K'] > last['D'] and row['K'] > 50
         
     def get_plots(self, data):
         high = data['最高'].max()
