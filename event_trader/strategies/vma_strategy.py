@@ -14,12 +14,12 @@ DEFAULT_PARAMS_RANGE = {
 }
 
 class VMAStrategy(BaseStrategy):
-    name = 'vma'
     """
     成交量或者换手率指标。
     成交量大于移动平均线的2倍;
     当价格低于移动平均线时，卖出。
     """
+    name = 'vma'
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE

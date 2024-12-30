@@ -19,11 +19,16 @@ class BaseStrategy(ABC):
         self.parameters = {}
         self.factors = factors
         self.load_parameters(self.params)
+    
+    def calculate(self):
         self.calculate_factors()
         self.account = self.calculate_profit()
+        return self.account
     
     def load_data(self):
-        return self.stock_data.kline
+        data = self.stock_data.kline
+        self.length = len(data)
+        return data
 
     def check_params_exists(self):
         """检查self.params_path文件是否存在"""
@@ -69,11 +74,7 @@ class BaseStrategy(ABC):
     def validate_parameter(self, parameters):
         return True
         
-    def optimize_parameters(self, params_range=None, params_step=None, no_optimize= True, force_optimize=False):
-        if (no_optimize or (self.check_params_exists() and not force_optimize)):
-            self.calculate_factors()
-            self.account = self.calculate_profit()
-            return self
+    def optimize_parameters(self, params_range=None, params_step=None):
         
         if params_range is not None:
             self.params_range = {**self.params_range, **params_range}
@@ -101,8 +102,7 @@ class BaseStrategy(ABC):
             
             if self.validate_parameter(self.parameters):
                 # 计算因子和利润
-                self.calculate_factors()
-                account = self.calculate_profit()
+                account = self.calculate()
                 profit = account.get_profit()
                 # 更新最佳参数
                 if profit > best_profit:
@@ -114,22 +114,35 @@ class BaseStrategy(ABC):
         self.parameters = best_parameters
         print(f"Optimized parameters: {self.parameters}, Profit = {best_profit}")
         self.save_parameters()
+        self.account = None
         return self
     
     def get_plots(self, data):
         return []
     
     
-    def show(self, days = CURRENT_DAYS, **kwargs):
+    def show(self, days = CURRENT_DAYS, optimize = False, optimize_params = {}, **kwargs):
+        if optimize:
+            self.optimize_parameters(**optimize_params)
         if self.account is None:
-            self.optimize_parameters()
-        self.calculate_factors()
+            self.calculate()
         stock_data_copy = self.data.copy().tail(days)
+        
+        # 截取交易数据
+        transactions_data = self.account.transactions[-days:] if self.account else []
+        
         add_plots = self.get_plots(stock_data_copy)
-        self.plot_basic(days = days, add_plots = add_plots, **kwargs)
+        self._plot_basic(days = days, add_plots = add_plots, transactions=transactions_data, **kwargs)
+        
+    def transactions(self, optimize = False, optimize_params = {}):
+        if optimize:
+            self.optimize_parameters(**optimize_params)
+        if self.account is None:
+            self.calculate()
+        return self.account.transactions
 
     
-    def plot_basic(self, days = CURRENT_DAYS, add_plots=None, title=None, volume_width=0.5, **kwargs):
+    def _plot_basic(self, days = CURRENT_DAYS, add_plots=None, title=None, volume_width=0.5, **kwargs):
         if title is None:
             title = f"{self.stock_data.symbol} {self.__class__.__name__} Figure, profit = {friendly_number(self.account.get_profit())}"
         if add_plots is None:
@@ -165,16 +178,16 @@ class BaseStrategy(ABC):
                 bar.set_color('red')  # Up color
             else:
                 bar.set_color('green')  # Down color
-        return self.after_plot(fig, axes, days = days,  **kwargs)
+        return self._after_plot(fig, axes, days = days,  **kwargs)
     
-    def after_plot(self, fig, axes, days= CURRENT_DAYS, **kwargs):
+    def _after_plot(self, fig, axes, days= CURRENT_DAYS, **kwargs):
         trades = self.account.transactions
         ax = axes[0]
         # Plot each trade with improved layout
         if 'transaction' not in kwargs or not kwargs['transaction']:
             for trade in trades:
-                date = trade['index'] - (HISTORY_DAYS - days)
-                if date < 0:
+                date = trade['index'] - (self.length - days)
+                if date < 0 or date > days:
                     continue
                 price_offset = trade['price'] * 0.1
                 if trade['type'] == 'buy':
@@ -207,8 +220,8 @@ class BaseStrategy(ABC):
             for i in range(0, len(trades) - 1, 2):
                 buy_trade = trades[i]
                 sell_trade = trades[i + 1]
-                bi = buy_trade['index'] - (HISTORY_DAYS - days)
-                si = sell_trade['index'] - (HISTORY_DAYS - days)
+                bi = buy_trade['index'] - (self.length - days)
+                si = sell_trade['index'] - (self.length - days)
                 if bi < 0 and si < 0:
                     continue
                 price_offset = (buy_trade['price'] + buy_trade['price'])  * 0.1
@@ -244,10 +257,6 @@ class BaseStrategy(ABC):
         if self.sell_signal(self.data.iloc[-1], len(self.data) - 1):
             return "Sell"
         return 'None'
-
-
-    def notify(self, message: str):
-        print(f"Notification: {message}")
 
     def __getitem__(self, key: str):
         if key in self.parameters:

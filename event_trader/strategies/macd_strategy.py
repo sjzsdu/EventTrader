@@ -19,10 +19,10 @@ DEFAULT_PARAMS_RANGE = {
 
 
 class MACDStrategy(BaseStrategy):
-    name = 'macd'
     """
     MACD 移动平均线收敛/发散指标（Moving Average Convergence Divergence）
     """
+    name = 'macd'
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE

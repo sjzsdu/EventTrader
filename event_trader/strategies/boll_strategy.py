@@ -20,7 +20,6 @@ DEFAULT_PARAMS_STEP = {
 }
 
 class BollStrategy(BaseStrategy):
-    name = 'boll'
     """
     布林带（BOLL）
     中轨（中线） ：
@@ -30,6 +29,7 @@ class BollStrategy(BaseStrategy):
     下轨：中轨减去同样倍数的标准差。
     标准的倍数通常设定为2，这意味着上、下轨分别在平均值的上下两个标准差处。
     """
+    name = 'boll'
     def __init__(self, stock_data: StockData, params = None, params_range = None, params_step = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE

@@ -18,10 +18,10 @@ DEFAULT_PARAMS_RANGE = {
 
 
 class KDJStrategy(BaseStrategy):
-    name = 'kdj'
     """
     KDJ指标, 随机振荡器
     """
+    name = 'kdj'
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE

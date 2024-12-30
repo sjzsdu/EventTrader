@@ -1,4 +1,3 @@
-```markdown
 # 股票交易策略系统
 
 ## 项目意图
@@ -27,49 +26,36 @@
 在使用本项目之前，请确保安装了以下依赖库：
 
 ```bash
-pip install pandas mplfinance china-stock-data
+pip install event_trader
 ```
 
 ### 使用步骤
+1. 分析个股的各选股策略的表现
+```python
+from event_trader.strategies import  MA2Strategy, KDJStrategy, MA1Strategy, BollStrategy, MACDStrategy, PriceDeviationStrategy
+from china_stock_data import StockData
+from event_trader import friendly_number
+stock = StockData('601688')
+print(f"{stock['股票简称']}, 市值:{friendly_number(stock['总市值'])}")
 
-1. **克隆项目**
+for strategy in [MA2Strategy, KDJStrategy, MA1Strategy, BollStrategy, MACDStrategy, PriceDeviationStrategy]:
+    st = strategy(stock)
+    st.show(transaction = False, days = 30)
+```
 
-   ```bash
-   git clone https://github.com/yourusername/stock-trading-strategy.git
-   cd stock-trading-strategy
-   ```
+或者输出各个策略的交易信息
+```python
+for strategy in [MA2Strategy, KDJStrategy, MA1Strategy, BollStrategy, MACDStrategy, PriceDeviationStrategy]:
+    st = strategy(stock)
+    print(st.transactions())
+```
 
-2. **创建股票数据实例**
-
-   ```python
-   from event_trader.stocks_manager import StocksManager
-
-   # 创建股票管理实例
-   manager = StocksManager(symbols=['601688', '000001'], index='沪深300')
-   ```
-
-3. **选择策略并进行优化**
-
-   ```python
-   from event_trader.strategies.boll_strategy import BollStrategy
-
-   # 选择布林带策略
-   strategy = BollStrategy(manager.stock_data)
-   strategy.optimize_parameters()
-   ```
-
-4. **进行模拟交易**
-
-   ```python
-   account = strategy.calculate_profit()
-   print(f"模拟交易利润: {account.get_profit()}%")
-   ```
-
-5. **可视化结果**
-
-   ```python
-   strategy.show()
-   ```
+2. 分析个股
+```python
+from event_trader import StockInfo
+stock = StockInfo('600489')
+stock.get_result(t)
+```
 
 ## 贡献
 
@@ -78,5 +64,14 @@ pip install pandas mplfinance china-stock-data
 ## 许可证
 
 本项目采用MIT许可证，详细信息请查看LICENSE文件。
+
+## 联系
+
+如有任何问题或建议，请通过以下方式联系我：
+
+- 邮箱: 122828837@qq.com
+- 微信二维码: ![微信二维码](assets/wx.jpg)
+
+感谢您的支持，欢迎赞助我喝杯咖啡！
 ```
 

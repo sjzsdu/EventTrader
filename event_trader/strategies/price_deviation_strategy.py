@@ -16,12 +16,12 @@ DEFAULT_PARAMS_RANGE = {
 }
 
 class PriceDeviationStrategy(BaseStrategy):
-    name = 'price_deviation'
     """
     股价偏移过大后会回归。
     股价降到移动平均价格下方的一定比例后触发回归，是买入的时机；
     估计升到了移动平均价格上方一定比例后触发下调，是卖出的时机；
     """
+    name = 'price_deviation'
     def __init__(self, stock_data: StockData, params = None, params_range = None):
         _params = params if params is not None else DEFAULT_PARAMS
         _params_range = params_range if params_range is not None else DEFAULT_PARAMS_RANGE
