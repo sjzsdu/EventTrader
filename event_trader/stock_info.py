@@ -22,6 +22,10 @@ class StockInfo:
         for key, item in self.strategies.items():
             item.show(**kwargs)
             
+    def optmize(self):
+        for key, item in self.strategies.items():
+                item.optimize_parameters()
+            
     def get_result(self, optimize = False, opt_params = {},  **kwargs):
         arr = []
         for key, item in self.strategies.items():

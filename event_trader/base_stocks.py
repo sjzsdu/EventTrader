@@ -28,9 +28,5 @@ class BaseStocks(ABC):
                 if is_a_share(symbol):
                     self.symbols.append(symbol)
 
-    
-    @abstractmethod
-    def create_stock_instance(self, symbol, **kwargs):
-        """创建股票实例，子类需要实现这个方法"""
-        pass
+
 
