@@ -4,6 +4,7 @@ from .kdj_strategy import KDJStrategy
 from .ma1_strategy import MA1Strategy
 from .boll_strategy import BollStrategy
 from .macd_strategy import MACDStrategy
+from .vma_strategy import VMAStrategy
 from .price_deviation_strategy import PriceDeviationStrategy
 
 STRATEGIES = [
@@ -12,6 +13,7 @@ STRATEGIES = [
     MA1Strategy,
     BollStrategy,
     MACDStrategy,
+    VMAStrategy,
     PriceDeviationStrategy
 ]
 

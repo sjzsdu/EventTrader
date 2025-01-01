@@ -26,9 +26,12 @@ class StockInfo:
         for key, item in self.strategies.items():
                 item.optimize_parameters()
             
-    def get_result(self, optimize = False, opt_params = {},  **kwargs):
+    def get_result(self, optimize = False, strategy = None, opt_params = {},  **kwargs):
         arr = []
         for key, item in self.strategies.items():
+            if strategy is not None and key != strategy:
+                continue
+            
             if optimize:
                 item.optimize_parameters(**opt_params)
             account = item.calculate()

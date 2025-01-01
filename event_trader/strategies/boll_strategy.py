@@ -11,7 +11,7 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (5, 30),
+    'window': (5, 40),
     "std": (0.5, 3)
 }
 
@@ -50,14 +50,58 @@ class BollStrategy(BaseStrategy):
         # 确保布林带数据有效
         if i == 0 or pd.isna(row['down']):
             return False
+            
         last = self.data.iloc[i-1]
-        return row[PRICE_COL] <= row['down']
+        
+        # 价格触及下轨且有反转迹象
+        if row[PRICE_COL] <= row['down'] and row[PRICE_COL] > last[PRICE_COL]:
+            return True
+            
+        # 布林带收缩后的向上突破
+        if i > 1:
+            prev_band_width = self.data.iloc[i-1]['upper'] - self.data.iloc[i-1]['down']
+            curr_band_width = row['upper'] - row['down']
+            if curr_band_width < prev_band_width * 0.8:  # 布林带收缩
+                if row[PRICE_COL] > row['moving_avg'] and row[PRICE_COL] > last[PRICE_COL]:
+                    return True
+                    
+        # 布林带扩张时的趋势延续
+        if i > 1:
+            prev_band_width = self.data.iloc[i-1]['upper'] - self.data.iloc[i-1]['down']
+            curr_band_width = row['upper'] - row['down']
+            if curr_band_width > prev_band_width * 1.2:  # 布林带扩张
+                if row[PRICE_COL] > row['moving_avg'] and row[PRICE_COL] > last[PRICE_COL]:
+                    return True
+                    
+        return False
 
     def sell_signal(self, row, i) -> bool:
         if i==0 or pd.isna(row['upper']):
             return False
+            
         last = self.data.iloc[i-1]
-        return row[PRICE_COL] >= row['upper']
+        
+        # 价格触及上轨且有反转迹象
+        if row[PRICE_COL] >= row['upper'] and row[PRICE_COL] < last[PRICE_COL]:
+            return True
+            
+        # 布林带收缩后的向下突破
+        if i > 1:
+            prev_band_width = self.data.iloc[i-1]['upper'] - self.data.iloc[i-1]['down']
+            curr_band_width = row['upper'] - row['down']
+            if curr_band_width < prev_band_width * 0.8:  # 布林带收缩
+                if row[PRICE_COL] < row['moving_avg'] and row[PRICE_COL] < last[PRICE_COL]:
+                    return True
+                    
+        # 布林带扩张时的趋势延续
+        if i > 1:
+            prev_band_width = self.data.iloc[i-1]['upper'] - self.data.iloc[i-1]['down']
+            curr_band_width = row['upper'] - row['down']
+            if curr_band_width > prev_band_width * 1.2:  # 布林带扩张
+                if row[PRICE_COL] < row['moving_avg'] and row[PRICE_COL] < last[PRICE_COL]:
+                    return True
+                    
+        return False
 
     def get_plots(self, data):
         return [

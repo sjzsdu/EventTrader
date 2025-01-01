@@ -70,8 +70,9 @@ stock.get_result(t)
 如有任何问题或建议，请通过以下方式联系我：
 
 - 邮箱: 122828837@qq.com
-- 微信二维码: ![微信二维码](assets/wx.jpg =200x200)
+- <img src="assets/wx.jpg" alt="微信二维码" width="200">
+
 
 感谢您的支持，欢迎赞助我喝杯咖啡！
-```
+
 

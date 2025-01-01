@@ -11,8 +11,8 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (5, 35),
-    'percent': (3, 20)
+    'window': (3, 35),
+    'percent': (2, 20)
 }
 
 class PriceDeviationStrategy(BaseStrategy):

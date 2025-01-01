@@ -9,7 +9,7 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'window': (3, 30)
+    'window': (5, 30)
 }
 
 class MA1Strategy(BaseStrategy):
@@ -35,16 +35,22 @@ class MA1Strategy(BaseStrategy):
             return False
         last1 = self.data.iloc[i-1]
         last2 = self.data.iloc[i-2]
-        return row['mavg_derivative'] > 0 and last1['mavg_derivative'] <= 0 and last2['mavg_derivative'] < 0
+        return (row[PRICE_COL] < row['moving_avg'] and 
+                row['mavg_derivative'] > 0 and 
+                last1['mavg_derivative'] <= 0 and 
+                last2['mavg_derivative'] < 0)
 
     def sell_signal(self, row, i) -> bool:
         if i < self.window + 3 or pd.isna(row['moving_avg']):
             return False
         last1 = self.data.iloc[i-1]
         last2 = self.data.iloc[i-2]
-        return row['mavg_derivative'] < 0 and last1['mavg_derivative'] >= 0 and last2['mavg_derivative'] > 0
+        return (row[PRICE_COL] > row['moving_avg'] and 
+                row['mavg_derivative'] < 0 and 
+                last1['mavg_derivative'] >= 0 and 
+                last2['mavg_derivative'] > 0)
     
     def get_plots(self, data):
         return [
             mpf.make_addplot(data['moving_avg'], width=0.8, color='blue', label=f'{self.parameters["window"]}-Day MA')
-        ] 
+        ]

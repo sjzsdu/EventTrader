@@ -3,6 +3,7 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from .base_stocks import BaseStocks
 from .utils import generate_short_md5
+import matplotlib.pyplot as plt
 
 def execute_in_threads(iterable, func, max_workers=5):
     results = []
@@ -62,6 +63,7 @@ class StocksManager(BaseStocks):
 
         # 使用公共方法合并 DataFrame
         result_df = self.merge_dataframes(dataframes)
+        self.result = result_df
         return result_df
     
     def optimize(self):
@@ -69,3 +71,32 @@ class StocksManager(BaseStocks):
             stock = self.get_stock_info(symbol)
             stock.optmize()
         execute_in_threads(self.symbols, _optimize, max_workers=5)
+        
+    def __getitem__(self, symbol):
+        return self.get_stock_info(symbol)
+    
+    def show_result(self, count = 2, status = 'Buy', **kwargs):
+        if (not hasattr(self, 'result')):
+            self.get_result(**kwargs)
+        data = self.result
+        buy = data[data['status'] == status]
+        
+        return buy.groupby('symbol').filter(lambda x: len(x) >= count)
+            
+    def evaluate_strategy_profits(self, **kwargs):
+        """评估各策略的平均盈利并绘制图表"""
+        if not hasattr(self, 'result'):
+            self.get_result(**kwargs)
+            
+        # 按策略名称分组计算平均盈利
+        strategy_profits = self.result.groupby('name')['profit'].mean()
+        
+        # 绘制柱状图
+        plt.figure(figsize=(10, 6))
+        strategy_profits.sort_values(ascending=False).plot(kind='bar')
+        plt.title('Average Profit by Strategy')
+        plt.xlabel('Strategy')
+        plt.ylabel('Average Profit')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.show()

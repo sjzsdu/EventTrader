@@ -12,9 +12,9 @@ DEFAULT_PARAMS = {
 }
 
 DEFAULT_PARAMS_RANGE = {
-    'short': (2, 30),
-    'long': (3, 60),
-    'middle': (2, 30),
+    'short': (5, 30),
+    'long': (10, 50),
+    'middle': (5, 30),
 }
 
 
@@ -45,29 +45,49 @@ class MACDStrategy(BaseStrategy):
     def buy_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['DIF']) or pd.isna(row['DEA']):
             return False
+            
         last = self.data.iloc[i-1]
-        # Check if DIF crosses above DEA (Golden Cross)
+        
+        # 金叉（DIF 上穿 DEA）
         if row['DIF'] > row['DEA'] and last['DIF'] <= last['DEA']:
             return True
-        
-        # Optionally, check if MACD histogram is turning positive from negative
-        if row['MACD'] > 0 and last['MACD'] <= 0:
+            
+        # MACD 柱状图由负转正且逐渐变长
+        if row['MACD'] > 0 and last['MACD'] <= 0 and row['MACD'] > last['MACD']:
             return True
-        
+            
+        # 底背离（价格创新低但 MACD 低点抬高）
+        if i > 1:
+            prev = self.data.iloc[i-2]
+            if row[PRICE_COL] < last[PRICE_COL] and row['MACD'] > last['MACD']:
+                return True
+                
+        # "将死不死"买入法
+        if abs(row['DIF'] - row['DEA']) < 0.01 and row['DIF'] > last['DIF']:
+            return True
+            
         return False
 
     def sell_signal(self, row, i) -> bool:
         if i == 0 or pd.isna(row['DIF']) or pd.isna(row['DEA']):
             return False
+            
         last = self.data.iloc[i-1]
-        # Check if DIF crosses below DEA (Dead Cross)
+        
+        # 死叉（DIF 下穿 DEA）
         if row['DIF'] < row['DEA'] and last['DIF'] >= last['DEA']:
             return True
-        
-        # Optionally, check if MACD histogram is turning negative from positive
-        if row['MACD'] < 0 and last['MACD'] >= 0:
+            
+        # MACD 柱状图由正转负且逐渐变短
+        if row['MACD'] < 0 and last['MACD'] >= 0 and row['MACD'] < last['MACD']:
             return True
-        
+            
+        # 顶背离（价格创新高但 MACD 高点降低）
+        if i > 1:
+            prev = self.data.iloc[i-2]
+            if row[PRICE_COL] > last[PRICE_COL] and row['MACD'] < last['MACD']:
+                return True
+                
         return False
         
     def get_plots(self, data):
