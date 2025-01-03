@@ -1,34 +1,39 @@
+import typer
+from typing import Optional
+from datetime import datetime, time
 from event_trader.notify.wechat_notifier import WeChatNotifier
 import schedule
-from datetime import datetime, timedelta, time
-from event_trader.notify import WeChatNotifier
+import time as sleep_time
 
-nt = WeChatNotifier()
+app = typer.Typer()
+
+from china_stock_data import TradingTimeChecker
+
+def is_market_open() -> bool:
+    """Check if current time is within market hours using TradingTimeChecker"""
+    return TradingTimeChecker.is_trading_time()
+
+@app.command()
+def start(
+    index: str = typer.Option("000300", help="China stock market index"),
+    interval: int = typer.Option(5, help="Event trading interval in minutes")
+):
+    """Start the notification service"""
     
-# Wait for login to complete
-print("请扫描二维码登录微信...")
-nt.wait_for_login(timeout=60)  # 60秒超时
-def job():
-    nt.send_notification('这是个测试呀', 'self')
-    print("执行任务:", datetime.now())
+    def job():
+        print(f"执行任务: {datetime.now()}")
 
-def is_market_open():
-    return True
-    now = datetime.now()
-    # 假设交易日为周一到周五，时间为 9:30 到 15:00
-    if now.weekday() < 5:  # 0-4 是周一到周五
-        market_open_time = now.replace(hour=9, minute=30, second=0, microsecond=0)
-        market_close_time = now.replace(hour=15, minute=0, second=0, microsecond=0)
-        return market_open_time <= now <= market_close_time
-    return False
+    def schedule_job():
+        if is_market_open(datetime.now()):
+            job()
 
-def schedule_job():
-    if is_market_open():
-        job()
+    # Schedule the job
+    schedule.every(interval).minutes.do(schedule_job)
+    print(f"Notification service started. Sending the buy symbols every {interval} minutes during market time")
+    
+    while True:
+        schedule.run_pending()
+        sleep_time.sleep(30)
 
-# 每隔30分钟检查并执行任务
-schedule.every(1).minutes.do(schedule_job)
-
-while True:
-    schedule.run_pending()
-    time.sleep(30)
+if __name__ == "__main__":
+    app()
