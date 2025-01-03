@@ -8,7 +8,13 @@ class WeChatNotifier(Notifier):
             self.logged_in = True
             if login_callback:
                 login_callback()
-        itchat.auto_login(hotReload=True, loginCallback=on_login)  # 在初始化时登录微信
+        try:
+            print("Starting WeChat login...")
+            itchat.auto_login(loginCallback=on_login)  # 在初始化时登录微信
+            print("WeChat login successful")
+        except Exception as e:
+            print(f"WeChat login failed: {str(e)}")
+            raise
 
     def wait_for_login(self, timeout=None):
         import time
