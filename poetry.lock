@@ -1290,6 +1290,20 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-dotenv"
+version = "1.0.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "pytz"
 version = "2024.2"
 description = "World timezone definitions, modern and historical"
@@ -1400,6 +1414,20 @@ files = [
 
 [package.extras]
 widechars = ["wcwidth"]
+
+[[package]]
+name = "tencentcloud-sdk-python"
+version = "3.0.1295"
+description = "Tencent Cloud SDK for Python"
+optional = false
+python-versions = "*"
+files = [
+    {file = "tencentcloud-sdk-python-3.0.1295.tar.gz", hash = "sha256:32e5f8dfadf66c13dd3b8f62fe471517f99a845179036125240d504cd1233d95"},
+    {file = "tencentcloud_sdk_python-3.0.1295-py2.py3-none-any.whl", hash = "sha256:8afe353eac7aa0f75d896c8811de91c090780ce9625fa84b22258ca3cf220765"},
+]
+
+[package.dependencies]
+requests = ">=2.16.0"
 
 [[package]]
 name = "tomli"
@@ -1549,4 +1577,4 @@ test = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "737ea7517c9fb563ec566ded6687f4649e54861890e00c796636b5f7f3d0408a"
+content-hash = "2f9b3dccc4213c91e3c8e787d5079d1146a7cd19e7af6c6fe6215802a3a3f6f9"
