@@ -12,3 +12,4 @@ event_trader/huntings/.ipynb_checkpoints/
 QR.png
 .env
 test-mail.py
+db.sqlite3

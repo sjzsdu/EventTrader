@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from urllib.parse import quote
 
 # 加载.env文件
 env_path = Path(__file__).parent / '.env'
@@ -15,7 +16,7 @@ DB_CONFIG = {
         'port': int(os.getenv('DB_PORT', 3306)),
         'database': os.getenv('DB_NAME', 'event_trader'),
         'username': os.getenv('DB_USER', 'root'),
-        'password': os.getenv('DB_PASSWORD', ''),
+        'password': quote(os.getenv('DB_PASSWORD', '')),
         'charset': os.getenv('MYSQL_CHARSET', 'utf8mb4'),
         'collation': os.getenv('MYSQL_COLLATION', 'utf8mb4_unicode_ci')
     },

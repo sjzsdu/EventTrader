@@ -12,7 +12,7 @@ class StrategySelect(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     date = Column(Date, nullable=False, comment='选股日期')
     symbol = Column(String(20), nullable=False, comment='股票代码')
-    idx = Column(String(20), nullable=False, comment='来源指数')
+    idx = Column(String(20), nullable=True, comment='来源指数')
     strategy = Column(String(50), nullable=False, comment='策略名称')
     action = Column(Enum('Buy', 'Sell'), nullable=False, comment='交易动作')
     price = Column(Float, nullable=False, comment='交易价格')

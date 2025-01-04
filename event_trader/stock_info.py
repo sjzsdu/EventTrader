@@ -45,6 +45,23 @@ class StockInfo:
                 'factors': item.factors_value(),
             })
         return pd.DataFrame(arr)
+    
+    def get_status(self, strategy = None, opt_params = {},  **kwargs):
+        arr = []
+        for key, item in self.strategies.items():
+            if strategy is not None and key != strategy:
+                continue
+            
+            item.calculate_factors()
+            
+            arr.append({
+                "name": key,
+                "description": get_first_line(item.__doc__),
+                "parameters": item.parameters,
+                'status': item.status(),
+                'factors': item.factors_value(),
+            })
+        return pd.DataFrame(arr)
 
         
         

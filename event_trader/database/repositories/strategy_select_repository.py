@@ -35,10 +35,10 @@ class StrategySelectRepository(BaseRepository):
             strategy_select = StrategySelect(
                 date=today,
                 symbol=symbol,
-                idx=strategy_data.get('index'),
+                idx=strategy_data.get('index', None),
                 strategy=strategy_data.get('name', ''),
                 action=strategy_data.get('status', ''),
-                price=strategy_data.get('row', {}).get('收盘', 0),
+                price=strategy_data.get('factors', {}).get('收盘', 0),
                 last_trade_time=datetime.now(),
                 update_count=0,
                 strategy_info={
