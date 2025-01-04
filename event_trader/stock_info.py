@@ -42,7 +42,7 @@ class StockInfo:
                 "parameters": item.parameters,
                 'status': item.status(),
                 'profit': account.get_profit(),
-                'data': item.factors
+                'factors': item.factors_value(),
             })
         return pd.DataFrame(arr)
 

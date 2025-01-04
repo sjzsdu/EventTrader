@@ -7,6 +7,7 @@ from datetime import datetime
 
 class BaseStocks(ABC):
     def __init__(self, symbols=None, file_path = 'base_stocks.json', index=None, start=None, limit=None, **kwargs):
+        self.index = index
         self.kwargs = kwargs
         self.cached = PersistentDict(file_path)
         self.symbols = []

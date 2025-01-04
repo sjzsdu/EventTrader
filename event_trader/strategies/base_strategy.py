@@ -250,6 +250,10 @@ class BaseStrategy(ABC):
         # ax.set_ylim(ylim[0], ylim[1] + (ylim[1] - ylim[0]) * 0.1)
         
         return fig, axes
+    
+    def factors_value(self):
+        row = self.data.iloc[-1]
+        return row.to_dict()
 
     def status(self):
         if self.buy_signal(self.data.iloc[-1], len(self.data) - 1):

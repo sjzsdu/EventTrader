@@ -4,6 +4,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from .base_stocks import BaseStocks
 from .utils import generate_short_md5
 import matplotlib.pyplot as plt
+from datetime import datetime
+from .database import SessionLocal
+from .database.repositories.strategy_select_repository import StrategySelectRepository
 
 def execute_in_threads(iterable, func, max_workers=5):
     results = []
@@ -53,6 +56,11 @@ class StocksManager(BaseStocks):
             stock = StockInfo(symbol)
             df = stock.get_result(**kwargs)
             df['symbol'] = symbol
+            
+            # 保存交易记录到数据库
+            if not df.empty:
+                self._save_trade_records(df, symbol)
+                
             return df
 
         results = execute_in_threads(self.symbols, _get_result, max_workers=5)
@@ -65,6 +73,27 @@ class StocksManager(BaseStocks):
         result_df = self.merge_dataframes(dataframes)
         self.result = result_df
         return result_df
+
+    def _save_trade_records(self, df, symbol):
+        """保存策略选股记录到数据库"""
+        with SessionLocal() as db:
+            repository = StrategySelectRepository(db)
+            try:
+                for _, row in df.iterrows():
+                    if row['status'] in ['Buy', 'Sell']:
+                        strategy_data = {
+                            'index': self.index,
+                            'name': row.get('name', ''),
+                            'status': row['status'],
+                            'row': row.get('row', {}),
+                            'description': row.get('description', ''),
+                            'parameters': row.get('parameters', {}),
+                            'profit': row.get('profit', 0),
+                            'data': row.get('data', {})
+                        }
+                        repository.save_strategy_select(symbol, strategy_data)
+            except Exception as e:
+                print(f"Error saving strategy select record: {e}")
     
     def optimize(self):
         def _optimize(symbol):
