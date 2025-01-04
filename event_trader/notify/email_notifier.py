@@ -11,17 +11,19 @@ class EmailNotifier(Notifier):
     - smtp_port: SMTP端口
     - email_user: 发件邮箱
     - email_password: 邮箱密码或授权码
+    - from_email: 发送邮箱
     """
     
     def __init__(self, smtp_server: str, smtp_port: int, 
-                 email_user: str, email_password: str):
+                 email_user: str, email_password: str, from_email: str):
         """初始化邮件通知器
         
         Args:
             smtp_server: SMTP服务器地址
             smtp_port: SMTP端口
-            email_user: 发件邮箱
+            email_user: 发件用户
             email_password: 邮箱密码或授权码
+            from_email: 发送邮箱
         """
         super().__init__()
         self.server = None
@@ -29,14 +31,15 @@ class EmailNotifier(Notifier):
         self.smtp_port = smtp_port
         self.email_user = email_user
         self.email_password = email_password
+        self.from_email = from_email
         
         try:
             # 验证配置
-            if not all([self.smtp_server, self.email_user, self.email_password]):
+            if not all([self.smtp_server, self.email_user, self.email_password, self.from_email]):
                 raise ValueError("邮件配置不完整")
                 
             # 创建SMTP连接
-            self.server = smtplib.SMTP_SSL(self.smtp_server, self.smtp_port)
+            self.server = smtplib.SMTP(self.smtp_server, self.smtp_port)
             self.server.login(self.email_user, self.email_password)
             
         except Exception as e:
@@ -59,7 +62,7 @@ class EmailNotifier(Notifier):
         try:
             # 创建邮件内容
             msg = MIMEText(message, 'plain', 'utf-8')
-            msg['From'] = formataddr(('Event Trader', self.email_user))
+            msg['From'] = formataddr(('Event Trader', self.from_email))
             msg['To'] = target
             msg['Subject'] = 'Event Trader 通知'
             
