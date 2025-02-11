@@ -28,23 +28,27 @@ def init_db():
     """Initialize database tables"""
     init_database()
     print("Database initialized successfully!")
-
+    
 @app.command()
 def start(
     index: str = typer.Option("000300", help="China stock market index"),
-    interval: int = typer.Option(5, help="Event trading interval in minutes")
+    interval: int = typer.Option(5, help="Event trading interval in minutes"),
+    loop: bool = typer.Option(False, help="Loop the job"),
+    allIndex: bool = typer.Option(False, help="Use all stock market index")
 ):
     """Start the notification service"""
-    
+    indexes = [index] if not allIndex else ["000001", "000300", "000905"]
     def job():
         print(f"执行任务: {datetime.now()}")
-        sm = StocksManager(index = index)
-        sm.show_result()
+        for idx in indexes:
+            sm = StocksManager(index = idx)
+            sm.show_result()
         
-
+    job()
+    
     def schedule_job():
-        # if is_market_open():
-        job()
+        if is_market_open() and loop:
+            job()
 
     # Schedule the job
     schedule.every(interval).minutes.do(schedule_job)

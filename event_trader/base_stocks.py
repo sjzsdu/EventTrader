@@ -14,7 +14,7 @@ class BaseStocks(ABC):
         if symbols is not None:
             self.symbols = symbols
         elif index:
-            self.stock_market = StockMarket(index)
+            self.stock_market = StockMarket(index = index)
             codes = self.stock_market['index_codes']
             
             if start is None:

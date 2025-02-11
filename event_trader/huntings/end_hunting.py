@@ -12,7 +12,7 @@ class EndHunting:
             for symbol in symbols:
                 self.stocks[symbol] = StockData(symbol)
         if index:
-            self.stock_market = StockMarket(index)
+            self.stock_market = StockMarket(index = index)
             codes = self.stock_market['index_codes']
 
             # 当 start 或 limit 为 None 时的处理

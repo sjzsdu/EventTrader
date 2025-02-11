@@ -89,7 +89,7 @@ class StocksManager(BaseStocks):
                             'description': row.get('description', ''),
                             'parameters': row.get('parameters', {}),
                             'profit': row.get('profit', 0),
-                            'data': row.get('data', {})
+                            'factors': row.get('factors', {})
                         }
                         repository.save_strategy_select(symbol, strategy_data)
             except Exception as e:
