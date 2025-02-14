@@ -1,0 +1,15 @@
+.env
+app_dict.json
+api_dict.json
+params
+data
+dist
+market
+cache
+scripts
+*.ipynb
+.ipynb_checkpoints
+.pytest_cache
+.github
+**/__pycache__
+db.sqlite3

@@ -6,17 +6,17 @@ on:
       - master  # 选择你要在推送时触发的分支
 
 jobs:
-  publish:
+  publish-python-package:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.12'  # 使用的 Python 版本
+          python-version: '3.10'  # 使用的 Python 版本
 
       - name: Install Poetry
         run: |
@@ -36,3 +36,41 @@ jobs:
         run: |
           poetry publish --build
 
+  build-and-publish-docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Build and push
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: sjzsdu/event_trader:latest
+
+    - name: Run custom script
+      run: |
+        chmod +x ./scripts/build-publish.sh
+        ./scripts/build-publish.sh
+      env:
+        DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
