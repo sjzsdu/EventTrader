@@ -19,7 +19,7 @@ DEFAULT_PARAMS_RANGE = {
 
 class KDJStrategy(BaseStrategy):
     """
-    KDJ指标, 随机振荡器
+KDJ指标, 随机振荡器
     """
     name = 'kdj'
     def __init__(self, stock_data: StockData, params = None, params_range = None):

@@ -14,10 +14,10 @@ DEFAULT_PARAMS_RANGE = {
 
 class MA1Strategy(BaseStrategy):
     """
-    MA (Moving Average) 移动平均策略
-    使用移动平均值的变化率来产生交易信号：
-    - 当变化率由负转正时买入
-    - 当变化率由正转负时卖出
+MA (Moving Average) 移动平均策略
+使用移动平均值的变化率来产生交易信号：
+- 当变化率由负转正时买入
+- 当变化率由正转负时卖出
     """
     name = 'ma1'
     def __init__(self, stock_data: StockData, params = None, params_range = None):

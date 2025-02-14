@@ -59,27 +59,25 @@ def is_a_share(stock_code):
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def is_continuous_growth(volume_series, n):
+def is_continuous_growth(series, n=3, reverse=False):
     """
-    判断最后n个数据是否连续增长。
+    判断最后n个数据是否连续增长或下降。
 
-    :param volume_series: 成交量的Pandas Series
+    :param series: Pandas Series
     :param n: 要判断的最后几个数据
-    :return: 如果连续增长返回True，否则返回False
+    :param reverse: 如果为True，则判断是否连续下降
+    :return: 如果连续增长（或下降）返回True，否则返回False
     """
-    # 检查输入是否至少有n个数据点
-    if len(volume_series) < n:
+    if len(series) < n:
         return False
 
-    # 获取最后n个数据
-    last_n = volume_series.tail(n)  # 使用 .tail() 方法获取最后n个数据
+    last_n = series.tail(n)
+    
+    if reverse:
+        return all(last_n.iloc[i] < last_n.iloc[i-1] for i in range(1, n))
+    else:
+        return all(last_n.iloc[i] > last_n.iloc[i-1] for i in range(1, n))
 
-    # 检查是否每个元素都大于前一个
-    for i in range(1, len(last_n)):
-        if last_n.iloc[i] <= last_n.iloc[i-1]:
-            return False
-
-    return True
 
 def percent_change(current, previous):
     if previous == 0:

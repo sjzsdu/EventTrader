@@ -21,9 +21,9 @@ DEFAULT_PARAMS_STEP = {
 
 class MA2Strategy(BaseStrategy):
     """
-    移动平均价格：计算两个不同周期的移动平均值。
-    当短周期的移动平均线高于长周期的移动平均线时，买入；
-    当短周期的移动平均线低于长周期的移动平均线时，卖出。
+移动平均价格：计算两个不同周期的移动平均值。
+当短周期的移动平均线高于长周期的移动平均线时，买入；
+当短周期的移动平均线低于长周期的移动平均线时，卖出。
     """
     name = 'ma2'
     def __init__(self, stock_data: StockData, *, sub_path = None, params = None, params_range=None, params_step=None, factors=None):

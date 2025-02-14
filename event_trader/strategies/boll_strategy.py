@@ -21,13 +21,13 @@ DEFAULT_PARAMS_STEP = {
 
 class BollStrategy(BaseStrategy):
     """
-    布林带（BOLL）
-    中轨（中线） ：
-    通常是一个特定周期的简单移动平均线（SMA），例如20天的移动平均线。
-    上轨和下轨：
-    上轨：中轨加上一个设定的倍数的标准差。
-    下轨：中轨减去同样倍数的标准差。
-    标准的倍数通常设定为2，这意味着上、下轨分别在平均值的上下两个标准差处。
+布林带（BOLL）
+中轨（中线） ：
+通常是一个特定周期的简单移动平均线（SMA），例如20天的移动平均线。
+上轨和下轨：
+上轨：中轨加上一个设定的倍数的标准差。
+下轨：中轨减去同样倍数的标准差。
+标准的倍数通常设定为2，这意味着上、下轨分别在平均值的上下两个标准差处。
     """
     name = 'boll'
     def __init__(self, stock_data: StockData, params = None, params_range = None, params_step = None):

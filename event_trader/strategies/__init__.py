@@ -5,7 +5,7 @@ from .ma1_strategy import MA1Strategy
 from .boll_strategy import BollStrategy
 from .macd_strategy import MACDStrategy
 from .vma_strategy import VMAStrategy
-from .price_deviation_strategy import PriceDeviationStrategy
+from .pd_strategy import PriceDeviationStrategy
 
 STRATEGIES = [
     MA2Strategy,
