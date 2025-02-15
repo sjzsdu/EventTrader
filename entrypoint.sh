@@ -5,7 +5,7 @@ INTERVAL=${LOOP_INTERVAL:-10}
 
 while true; do
     echo "Running main.py with --allindex"
-    python main.py --allindex
+    python main.py start --allindex
     echo "Waiting for $INTERVAL minutes before next execution"
     sleep $(( INTERVAL * 60 ))
 done

@@ -547,22 +547,6 @@ files = [
 ]
 
 [[package]]
-name = "itchat"
-version = "1.3.10"
-description = "A complete wechat personal account api"
-optional = false
-python-versions = "*"
-files = [
-    {file = "itchat-1.3.10-py2.py3-none-any.whl", hash = "sha256:e54ad188853ced1173a96c8686201214a721c95bd3970e2d78fc7a23a552272c"},
-    {file = "itchat-1.3.10.tar.gz", hash = "sha256:3bbff1b3755bc7cab1f80e568da8bf4720eb4430143d550225ce37a8d9d0a4cb"},
-]
-
-[package.dependencies]
-pypng = "*"
-pyqrcode = "*"
-requests = "*"
-
-[[package]]
 name = "jsonpath"
 version = "0.82.2"
 description = "An XPath for JSON"
@@ -1274,31 +1258,6 @@ files = [
 diagrams = ["jinja2", "railroad-diagrams"]
 
 [[package]]
-name = "pypng"
-version = "0.20220715.0"
-description = "Pure Python library for saving and loading PNG images"
-optional = false
-python-versions = "*"
-files = [
-    {file = "pypng-0.20220715.0-py3-none-any.whl", hash = "sha256:4a43e969b8f5aaafb2a415536c1a8ec7e341cd6a3f957fd5b5f32a4cfeed902c"},
-    {file = "pypng-0.20220715.0.tar.gz", hash = "sha256:739c433ba96f078315de54c0db975aee537cbc3e1d0ae4ed9aab0ca1e427e2c1"},
-]
-
-[[package]]
-name = "pyqrcode"
-version = "1.2.1"
-description = "A QR code generator written purely in Python with SVG, EPS, PNG and terminal output."
-optional = false
-python-versions = "*"
-files = [
-    {file = "PyQRCode-1.2.1.tar.gz", hash = "sha256:fdbf7634733e56b72e27f9bce46e4550b75a3a2c420414035cae9d9d26b234d5"},
-    {file = "PyQRCode-1.2.1.zip", hash = "sha256:1b2812775fa6ff5c527977c4cd2ccb07051ca7d0bc0aecf937a43864abe5eff6"},
-]
-
-[package.extras]
-png = ["pypng (>=0.0.13)"]
-
-[[package]]
 name = "pytest"
 version = "8.3.4"
 description = "pytest: simple powerful testing with Python"
@@ -1398,20 +1357,6 @@ typing-extensions = {version = ">=4.0.0,<5.0", markers = "python_version < \"3.1
 
 [package.extras]
 jupyter = ["ipywidgets (>=7.5.1,<9)"]
-
-[[package]]
-name = "schedule"
-version = "1.2.2"
-description = "Job scheduling for humans."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "schedule-1.2.2-py3-none-any.whl", hash = "sha256:5bef4a2a0183abf44046ae0d164cadcac21b1db011bdd8102e4a0c1e91e06a7d"},
-    {file = "schedule-1.2.2.tar.gz", hash = "sha256:15fe9c75fe5fd9b9627f3f19cc0ef1420508f9f9a46f45cd0769ef75ede5f0b7"},
-]
-
-[package.extras]
-timezone = ["pytz"]
 
 [[package]]
 name = "shellingham"
@@ -1554,20 +1499,6 @@ files = [
 
 [package.extras]
 widechars = ["wcwidth"]
-
-[[package]]
-name = "tencentcloud-sdk-python"
-version = "3.0.1319"
-description = "Tencent Cloud SDK for Python"
-optional = false
-python-versions = "*"
-files = [
-    {file = "tencentcloud-sdk-python-3.0.1319.tar.gz", hash = "sha256:c5bdc0380ef4341d08210cd6e1dea288ce80a70e74266534af7bdedf39b3755f"},
-    {file = "tencentcloud_sdk_python-3.0.1319-py2.py3-none-any.whl", hash = "sha256:59023cd71db3bd73e73de8ee9c951ae7e45788cd7ec81ddccc33ec445f81add8"},
-]
-
-[package.dependencies]
-requests = ">=2.16.0"
 
 [[package]]
 name = "tomli"
@@ -1717,4 +1648,4 @@ test = ["pytest", "pytest-cov"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "88c1a04e58887141d9b117cab5fbf1d301f5b1e56cf7ead899290fd079d0d3e1"
+content-hash = "08b6653d990c8b0762af3d2fb587b8b9d57bdb0c6aaaee4e2057817832d36330"

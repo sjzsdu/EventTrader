@@ -33,7 +33,7 @@ SQLALCHEMY_DATABASE_URI = '{driver}://{username}:{password}@{host}:{port}/{datab
 
 # 腾讯云短信配置
 TENCENT_SECRET_ID = os.getenv("TENCENT_SECRET_ID")
-TENCENT_SECRET_KEY = os.getelsnv("TENCENT_SECRET_KEY")
+TENCENT_SECRET_KEY = os.getenv("TENCENT_SECRET_KEY")
 TENCENT_REGION = os.getenv("TENCENT_REGION")
 TENCENT_SMS_APP_ID = os.getenv("TENCENT_SMS_APP_ID")
 TENCENT_SMS_SIGN_NAME = os.getenv("TENCENT_SMS_SIGN_NAME")
