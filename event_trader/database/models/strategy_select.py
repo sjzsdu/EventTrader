@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import Column, Integer, String, Float, DateTime, Date, Enum, JSON
 from sqlalchemy.ext.declarative import declarative_base
-from config import SQLALCHEMY_DATABASE_URI
+from event_trader.config import SQLALCHEMY_DATABASE_URI
 
 Base = declarative_base()
 
