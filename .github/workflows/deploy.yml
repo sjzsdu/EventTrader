@@ -35,6 +35,7 @@ jobs:
           POETRY_PYPI_TOKEN_PYPI: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           poetry publish --build
+        continue-on-error: true
 
   build-and-publish-docker:
     runs-on: ubuntu-latest
