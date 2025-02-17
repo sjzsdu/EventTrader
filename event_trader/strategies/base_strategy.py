@@ -2,7 +2,7 @@ import os
 import pandas as pd
 from abc import ABC, abstractmethod
 from event_trader.demo_account import DemoAccount
-from event_trader.config import DATE_COL, SYMBOL_COL, CURRENT_DAYS, HISTORY_DAYS
+from event_trader.config import DATE_COL, SYMBOL_COL, CURRENT_DAYS
 from event_trader.utils import friendly_number
 import numpy as np
 import mplfinance as mpf
@@ -261,11 +261,6 @@ class BaseStrategy(ABC):
         if self.sell_signal(self.data.iloc[-1], len(self.data) - 1):
             return "Sell"
         return 'None'
-    
-    def stock_profit(self):
-        last = self.data.iloc[-1]
-        first = self.data.iloc[0]
-        return (last['Close'] - first['Close']) / first['Close']
 
     def __getitem__(self, key: str):
         if key in self.parameters:

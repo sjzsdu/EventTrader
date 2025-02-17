@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "event-trader"
-version = "0.1.10"
+version = "0.1.11"
 description = "量化交易-选股策略-自定义参数指标"
 authors = ["sjzsdu <122828837@qq.com>"]
 readme = "README.md"

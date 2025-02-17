@@ -41,7 +41,7 @@ class StockInfo:
                 "description": get_first_line(item.__doc__),
                 "parameters": item.parameters,
                 'status': item.status(),
-                'stock_profit': item.stock_profit(),
+                'stock_profit': self.stock_data['涨跌幅'],
                 'profit': account.get_profit(),
                 'factors': item.factors_value(),
             })
