@@ -1,9 +1,6 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from china_stock_data import StockMarket, PersistentDict
 from .utils import is_a_share
-import json
-import os
-from datetime import datetime
 
 class BaseStocks(ABC):
     def __init__(self, symbols=None, file_path = 'base_stocks.json', index=None, start=None, limit=None, **kwargs):

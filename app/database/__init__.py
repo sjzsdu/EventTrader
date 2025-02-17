@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
-from event_trader.config import SQLALCHEMY_DATABASE_URI
+from config import SQLALCHEMY_DATABASE_URI
 from .models.strategy_select import Base, StrategySelect
 from .repositories.strategy_select_repository import StrategySelectRepository
 from .repositories.base_repository import BaseRepository

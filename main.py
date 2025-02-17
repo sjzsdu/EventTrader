@@ -1,6 +1,7 @@
 import typer
 from datetime import datetime
-from event_trader.database import init_db as init_database
+from app.database import init_db as init_database
+from app.save_database import save_trade_records
 from event_trader import StocksManager
 
 app = typer.Typer()
@@ -34,6 +35,7 @@ def start(
     print(f"执行任务: {datetime.now()}")
     for idx in indexes:
         sm = StocksManager(index = idx)
+        sm.add_callback(save_trade_records)
         sm.show_result()
 
     print("Notification service stopped.")

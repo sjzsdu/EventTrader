@@ -4,9 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from .base_stocks import BaseStocks
 from .utils import generate_short_md5
 import matplotlib.pyplot as plt
-from datetime import datetime
-from .database import SessionLocal
-from .database.repositories.strategy_select_repository import StrategySelectRepository
+import time
 
 def execute_in_threads(iterable, func, max_workers=5):
     results = []
@@ -21,11 +19,28 @@ def execute_in_threads(iterable, func, max_workers=5):
                 print(f"Error processing {item}: {e}")
     return results
 
+def execute_normal(iterable, func, timespan = 1):
+    results = []
+    for item in iterable:
+        try:
+            result = func(item)
+            results.append(result)
+        except Exception as e:
+            print(f"Error processing {item}: {e}")
+        time.sleep(timespan)
+    return results
+
+
 class StocksManager(BaseStocks):
     def __init__(self, symbols=None, index=None, start=None, limit=None, **kwargs):
         file_path = generate_short_md5(f'{str(symbols)}-{str(index)}') + '.json'
         super().__init__(symbols=symbols, file_path=file_path, index=index, start=start, limit=limit, **kwargs)
         self.stocks = {}
+        self.callbacks = []
+        
+    def add_callback(self, callback):
+        """添加回调函数"""
+        self.callbacks.append(callback)
 
     def get_stock_info(self, symbol, **kwargs):
         if symbol not in self.symbols:
@@ -40,7 +55,7 @@ class StocksManager(BaseStocks):
         def _show(symbol):
             stock = self.get_stock_info(symbol)
             stock.show(**kwargs)
-        execute_in_threads(self.symbols, _show, max_workers=5)
+        execute_normal(self.symbols, _show)
 
     def merge_dataframes(self, dataframes):
         """合并多个 DataFrame"""
@@ -57,13 +72,12 @@ class StocksManager(BaseStocks):
             df = stock.get_result(**kwargs)
             df['symbol'] = symbol
             
-            # 保存交易记录到数据库
-            if not df.empty:
-                self._save_trade_records(df, symbol)
+            for callback in self.callbacks:
+                callback(df, symbol, self)
                 
             return df
 
-        results = execute_in_threads(self.symbols, _get_result, max_workers=5)
+        results = execute_normal(self.symbols, _get_result)
         # 处理结果
         for df in results:
             if df is not None:
@@ -74,32 +88,11 @@ class StocksManager(BaseStocks):
         self.result = result_df
         return result_df
 
-    def _save_trade_records(self, df, symbol):
-        """保存策略选股记录到数据库"""
-        with SessionLocal() as db:
-            repository = StrategySelectRepository(db)
-            try:
-                for _, row in df.iterrows():
-                    if row['status'] in ['Buy', 'Sell']:
-                        strategy_data = {
-                            'index': self.index,
-                            'name': row.get('name', ''),
-                            'status': row['status'],
-                            'row': row.get('row', {}),
-                            'description': row.get('description', ''),
-                            'parameters': row.get('parameters', {}),
-                            'profit': row.get('profit', 0),
-                            'factors': row.get('factors', {})
-                        }
-                        repository.save_strategy_select(symbol, strategy_data)
-            except Exception as e:
-                print(f"Error saving strategy select record: {e}")
-    
     def optimize(self):
         def _optimize(symbol):
             stock = self.get_stock_info(symbol)
             stock.optmize()
-        execute_in_threads(self.symbols, _optimize, max_workers=5)
+        execute_normal(self.symbols, _optimize)
         
     def __getitem__(self, symbol):
         return self.get_stock_info(symbol)

@@ -22,7 +22,7 @@ class SMSNotifier(Notifier):
         self.client = None
         
         try:
-            from ..config import (
+            from config import (
                 TENCENT_SECRET_ID,
                 TENCENT_SECRET_KEY,
                 TENCENT_REGION,
@@ -38,11 +38,11 @@ class SMSNotifier(Notifier):
                 
             self.sms_app_id = TENCENT_SMS_APP_ID
             self.sign_name = TENCENT_SMS_SIGN_NAME
-                raise ValueError("短信配置不完整")
+            self.template_id = TENCENT_SMS_TEMPLATE_ID 
                 
             # 创建短信客户端
-            cred = credential.Credential(secret_id, secret_key)
-            self.client = sms_client.SmsClient(cred, region)
+            cred = credential.Credential(TENCENT_SECRET_ID, TENCENT_SECRET_KEY)
+            self.client = sms_client.SmsClient(cred, TENCENT_REGION)
             
         except Exception as e:
             self.client = None
