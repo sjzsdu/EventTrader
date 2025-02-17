@@ -52,49 +52,49 @@ KDJ指标, 随机振荡器
         # 计算J值
         data['J'] = 3.0 * data['K'] - 2.0 * data['D']
 
+    # FILEPATH: /Users/juzhongsun/Codes/pythons/event_trader/event_trader/strategies/kdj_strategy.py
+
     def buy_signal(self, row, i) -> bool:
-        if i == 0 or pd.isna(row['K']) or pd.isna(row['D']) or pd.isna(row['J']):
+        if i < 3 or pd.isna(row['K']) or pd.isna(row['D']) or pd.isna(row['J']):
             return False
-            
-        last = self.data.iloc[i-1]
         
-        # 金叉（K线由下向上穿过D线）
-        if row['K'] > row['D'] and last['K'] <= last['D']:
-            return True
-            
-        # 超卖区域（J值小于0或K值在20以下）
-        if row['J'] < 0 or row['K'] < 20:
-            return True
-            
-        # 底背离（价格创新低但 KDJ 低点抬高）
-        if i > 1:
-            prev = self.data.iloc[i-2]
-            if row['收盘'] < last['收盘'] and row['K'] > last['K']:
-                return True
-                
-        return False
+        last = self.data.iloc[i-1]
+        prev = self.data.iloc[i-2]
+        prev_prev = self.data.iloc[i-3]
+        
+        # 金叉确认（连续两天K线上穿D线）
+        golden_cross = (row['K'] > row['D'] and last['K'] > last['D'] and 
+                        prev['K'] <= prev['D'] and prev_prev['K'] <= prev_prev['D'])
+        
+        # 超卖区域反转（J值从低于0反弹至高于0，且K值小于30）
+        oversold_reversal = (row['J'] > 0 and last['J'] <= 0 and row['K'] < 30)
+        
+        # 强势底背离（价格创新低但KDJ指标连续两天走高）
+        strong_divergence = (row['收盘'] < last['收盘'] < prev['收盘'] and 
+                            row['K'] > last['K'] > prev['K'] and row['K'] < 30)
+        
+        return golden_cross or oversold_reversal or strong_divergence
 
     def sell_signal(self, row, i) -> bool:
-        if i == 0 or pd.isna(row['K']) or pd.isna(row['D']) or pd.isna(row['J']):
+        if i < 3 or pd.isna(row['K']) or pd.isna(row['D']) or pd.isna(row['J']):
             return False
-            
-        last = self.data.iloc[i-1]
         
-        # 死叉（K线由上向下穿过D线）
-        if row['K'] < row['D'] and last['K'] >= last['D']:
-            return True
-            
-        # 超买区域（J值大于100或K值在80以上）
-        if row['J'] > 100 or row['K'] > 80:
-            return True
-            
-        # 顶背离（价格创新高但 KDJ 高点降低）
-        if i > 1:
-            prev = self.data.iloc[i-2]
-            if row['收盘'] > last['收盘'] and row['K'] < last['K']:
-                return True
-                
-        return False
+        last = self.data.iloc[i-1]
+        prev = self.data.iloc[i-2]
+        prev_prev = self.data.iloc[i-3]
+        
+        # 死叉确认（连续两天K线下穿D线）
+        death_cross = (row['K'] < row['D'] and last['K'] < last['D'] and 
+                    prev['K'] >= prev['D'] and prev_prev['K'] >= prev_prev['D'])
+        
+        # 超买区域反转（J值从高于100回落至低于100，且K值大于70）
+        overbought_reversal = (row['J'] < 100 and last['J'] >= 100 and row['K'] > 70)
+        
+        # 强势顶背离（价格创新高但KDJ指标连续两天走低）
+        strong_divergence = (row['收盘'] > last['收盘'] > prev['收盘'] and 
+                            row['K'] < last['K'] < prev['K'] and row['K'] > 70)
+        
+        return death_cross or overbought_reversal or strong_divergence
         
     def get_plots(self, data):
         high = data['最高'].max()

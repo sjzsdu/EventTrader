@@ -22,7 +22,8 @@ def init_db():
 def start(
     index: str = typer.Option("000300", help="China stock market index"),
     allIndex: bool = typer.Option(False, help="Use all stock market index"),
-    force: bool = typer.Option(False, help="Force run even if market is closed")
+    force: bool = typer.Option(False, help="Force run even if market is closed"),
+    optimize: bool = typer.Option(False, help="Opmitize the strategy parameters"),
 ):
     if not is_market_open() and not force:
         print("Market is closed. No need run")
@@ -34,9 +35,12 @@ def start(
     
     print(f"执行任务: {datetime.now()}")
     for idx in indexes:
-        sm = StocksManager(index = idx)
+        params = {}
+        if optimize:
+            params["optimize"] = True
+        sm = StocksManager(index=idx)
         sm.add_callback(save_trade_records)
-        sm.show_result()
+        sm.show_result(**params)
 
     print("Notification service stopped.")
 
