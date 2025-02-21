@@ -31,4 +31,4 @@ ENV PYTHONUNBUFFERED=1
 VOLUME ["/app/params", "/app/market", "/app/cache"]
 
 # 使用 entrypoint.sh 作为容器的入口点
-ENTRYPOINT ["bash", "/app/entrypoint.sh"]
+ENTRYPOINT ["python", "main.py"]

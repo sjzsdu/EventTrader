@@ -55,7 +55,7 @@ class StocksManager(BaseStocks):
         def _show(symbol):
             stock = self.get_stock_info(symbol)
             stock.show(**kwargs)
-        execute_normal(self.symbols, _show)
+        execute_in_threads(self.symbols, _show)
 
     def merge_dataframes(self, dataframes):
         """合并多个 DataFrame"""
@@ -77,7 +77,7 @@ class StocksManager(BaseStocks):
                 
             return df
 
-        results = execute_normal(self.symbols, _get_result)
+        results = execute_in_threads(self.symbols, _get_result)
         # 处理结果
         for df in results:
             if df is not None:
@@ -92,7 +92,7 @@ class StocksManager(BaseStocks):
         def _optimize(symbol):
             stock = self.get_stock_info(symbol)
             stock.optmize()
-        execute_normal(self.symbols, _optimize)
+        execute_in_threads(self.symbols, _optimize)
         
     def __getitem__(self, symbol):
         return self.get_stock_info(symbol)
