@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true
 
   build-and-release-executable:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: publish-python-package
     steps:
       - name: Checkout code
@@ -61,7 +61,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --onefile main.py
+          pyinstaller --onefile main.py --name event_trader
 
       - name: Create Release
         id: create_release
@@ -80,6 +80,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/main
-          asset_name: event_trader_v${{ steps.get_version.outputs.VERSION }}
+          asset_path: ./dist/event_trader
+          asset_name: event_trader_v${{ steps.get_version.outputs.VERSION }}_ubuntu22.04
           asset_content_type: application/octet-stream
