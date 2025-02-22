@@ -6,7 +6,7 @@ authors = ["sjzsdu <122828837@qq.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.13" 
 pandas = "^2.2.3"
 mplfinance = "^0.12.10b0"
 matplotlib = "^3.9.2"
@@ -19,7 +19,7 @@ pymysql = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
-pyinstaller = "^5.7.0"  
+pyinstaller = {version = "^5.7.0", python = ">=3.10,<3.13"} 
 
 [build-system]
 requires = ["poetry-core"]
