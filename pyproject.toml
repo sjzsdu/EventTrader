@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "event-trader"
-version = "0.1.13"
+version = "0.1.14"
 description = "量化交易-选股策略-自定义参数指标"
 authors = ["sjzsdu <122828837@qq.com>"]
 readme = "README.md"
@@ -19,6 +19,7 @@ pymysql = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
+pyinstaller = "^5.7.0"  
 
 [build-system]
 requires = ["poetry-core"]

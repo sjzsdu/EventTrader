@@ -49,11 +49,15 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
       - name: Install dependencies
         run: |
-          pip install poetry
-          poetry install
-          pip install pyinstaller
+          poetry config virtualenvs.create false
+          poetry install --with dev
 
       - name: Get version
         id: get_version
@@ -61,11 +65,11 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --onefile main.py --name event_trader
+          poetry run pyinstaller --onefile main.py --name event_trader
 
       - name: Rename executable
         run: |
-          mv ./dist/event_trader ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}_ubuntu22.04
+          mv ./dist/event_trader ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
 
       - name: Create/Update Release
         uses: softprops/action-gh-release@v1
@@ -80,6 +84,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}_ubuntu22.04
+            ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
