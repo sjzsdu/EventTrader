@@ -37,82 +37,110 @@ jobs:
           poetry publish --build
         continue-on-error: true
 
-  build-and-release-executable:
-    runs-on: ubuntu-22.04
-    needs: publish-python-package
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
-
-      - name: Install Poetry
-        run: |
-          curl -sSL https://install.python-poetry.org | python -
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Configure Poetry
-        run: |
-          poetry config virtualenvs.create false
-
-      - name: Install dependencies
-        run: |
-          poetry install --with dev
-
-      - name: Get version
-        id: get_version
-        run: echo "VERSION=$(poetry version -s)" >> $GITHUB_OUTPUT
-
-      - name: Build executable
-        run: |
-          poetry run pyinstaller --onefile --clean \
-            --hidden-import=ipaddress \
-            --hidden-import=pygments.lexers \
-            --hidden-import=pygments.styles \
-            --hidden-import=webencodings \
-            --hidden-import=dateutil.tz \
-            --hidden-import=markdown_it \
-            --hidden-import=encodings \
-            --hidden-import=html5lib \
-            --hidden-import=xml.sax \
-            --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/typer:typer" \
-            --debug all \
-            --log-level DEBUG \
-            main.py --name event_trader
-
-      - name: Rename executable
-        run: |
-          mv ./dist/event_trader ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
-
-      - name: Set executable permissions
-        run: chmod +x ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
-
-      - name: Test executable
-        run: |
-          ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }} --help
-
-      - name: Create/Update Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.get_version.outputs.VERSION }}
-          name: Release v${{ steps.get_version.outputs.VERSION }}
-          body: |
-            Release for version ${{ steps.get_version.outputs.VERSION }}
+    build-and-release-executable:
+      runs-on: ubuntu-22.04
+      needs: publish-python-package
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+  
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.10'
+  
+        - name: Install system dependencies
+          run: |
+            sudo apt-get update
+            sudo apt-get install -y libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+  
+        - name: Install Poetry
+          run: |
+            curl -sSL https://install.python-poetry.org | python -
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+  
+        - name: Configure Poetry
+          run: |
+            poetry config virtualenvs.create false
+  
+        - name: Install dependencies
+          run: |
+            poetry install --with dev
+  
+        - name: Get version
+          id: get_version
+          run: echo "VERSION=$(poetry version -s)" >> $GITHUB_OUTPUT
+  
+        - name: Build executable
+          run: |
+            poetry run pyinstaller --onefile --clean \
+              --hidden-import=ipaddress \
+              --hidden-import=pygments.lexers \
+              --hidden-import=pygments.styles \
+              --hidden-import=pygments.styles._mapping \
+              --hidden-import=webencodings \
+              --hidden-import=webencodings.labels \
+              --hidden-import=dateutil.tz \
+              --hidden-import=markdown_it \
+              --hidden-import=markdown_it.rules_block \
+              --hidden-import=markdown_it.rules_inline \
+              --hidden-import=encodings \
+              --hidden-import=encodings.aliases \
+              --hidden-import=encodings.utf_8 \
+              --hidden-import=encodings.utf_16_be \
+              --hidden-import=encodings.utf_16_le \
+              --hidden-import=encodings.cp437 \
+              --hidden-import=encodings.idna \
+              --hidden-import=html5lib \
+              --hidden-import=html5lib.treewalkers \
+              --hidden-import=xml.sax \
+              --hidden-import=xml.sax.handler \
+              --hidden-import=xml.sax.xmlreader \
+              --hidden-import=_random \
+              --hidden-import=urllib \
+              --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/typer:typer" \
+              --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/pygments:pygments" \
+              --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/markdown_it:markdown_it" \
+              --collect-all dateutil \
+              --collect-all webencodings \
+              --collect-all html5lib \
+              --debug all \
+              --log-level DEBUG \
+              main.py --name event_trader
+  
+        - name: Rename executable
+          run: |
+            mv ./dist/event_trader ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
+  
+        - name: Set executable permissions
+          run: chmod +x ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
+  
+        - name: Test executable
+          run: |
+            # 显示可执行文件的信息
+            file ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
             
-            This release was automatically generated by the GitHub Actions workflow.
-            It includes the latest executable built for Ubuntu 22.04.
-          draft: false
-          prerelease: false
-          files: |
-            ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            # 列出可执行文件的动态依赖
+            ldd ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
+            
+            # 使用strace运行可执行文件以获取更多调试信息
+            strace -f ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }} --help
+  
+        - name: Create/Update Release
+          uses: softprops/action-gh-release@v1
+          with:
+            tag_name: v${{ steps.get_version.outputs.VERSION }}
+            name: Release v${{ steps.get_version.outputs.VERSION }}
+            body: |
+              Release for version ${{ steps.get_version.outputs.VERSION }}
+              
+              This release was automatically generated by the GitHub Actions workflow.
+              It includes the latest executable built for Ubuntu 22.04.
+            draft: false
+            prerelease: false
+            files: |
+              ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
