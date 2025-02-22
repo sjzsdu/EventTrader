@@ -36,7 +36,6 @@ jobs:
         run: |
           poetry publish --build
         continue-on-error: true
-
   build-and-release-executable:
     runs-on: ubuntu-22.04
     needs: publish-python-package
@@ -101,9 +100,17 @@ jobs:
             --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/typer:typer" \
             --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/pygments:pygments" \
             --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/markdown_it:markdown_it" \
+            --add-binary "/lib/x86_64-linux-gnu/libdl.so.2:." \
+            --add-binary "/lib/x86_64-linux-gnu/libz.so.1:." \
+            --add-binary "/lib/x86_64-linux-gnu/libpthread.so.0:." \
+            --add-binary "/lib/x86_64-linux-gnu/libc.so.6:." \
+            --collect-all typer \
+            --collect-all pygments \
+            --collect-all markdown_it \
             --collect-all dateutil \
             --collect-all webencodings \
             --collect-all html5lib \
+            --runtime-tmpdir . \
             --debug all \
             --log-level DEBUG \
             main.py --name event_trader
@@ -117,6 +124,8 @@ jobs:
 
       - name: Test executable
         run: |
+          export LD_LIBRARY_PATH=/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+          
           # 显示可执行文件的信息
           file ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
           
@@ -142,5 +151,6 @@ jobs:
             ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
 
