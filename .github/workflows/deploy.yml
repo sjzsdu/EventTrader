@@ -49,14 +49,22 @@ jobs:
         with:
           python-version: '3.10'
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1-mesa-glx libegl1-mesa libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 libxi6 libxtst6
+
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python -
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
-      - name: Install dependencies
+      - name: Configure Poetry
         run: |
           poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: |
           poetry install --with dev
 
       - name: Get version
@@ -65,11 +73,31 @@ jobs:
 
       - name: Build executable
         run: |
-          poetry run pyinstaller --onefile --clean --hidden-import=ipaddress --debug all main.py --name event_trader
+          poetry run pyinstaller --onefile --clean \
+            --hidden-import=ipaddress \
+            --hidden-import=pygments.lexers \
+            --hidden-import=pygments.styles \
+            --hidden-import=webencodings \
+            --hidden-import=dateutil.tz \
+            --hidden-import=markdown_it \
+            --hidden-import=encodings \
+            --hidden-import=html5lib \
+            --hidden-import=xml.sax \
+            --add-data "$(poetry run python -c 'import site; print(site.getsitepackages()[0])')/typer:typer" \
+            --debug all \
+            --log-level DEBUG \
+            main.py --name event_trader
 
       - name: Rename executable
         run: |
-          mv ./dist/event_trader ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}_ubuntu22.04
+          mv ./dist/event_trader ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
+
+      - name: Set executable permissions
+        run: chmod +x ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
+
+      - name: Test executable
+        run: |
+          ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }} --help
 
       - name: Create/Update Release
         uses: softprops/action-gh-release@v1
@@ -84,6 +112,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}_ubuntu22.04
+            ./dist/event_trader_v${{ steps.get_version.outputs.VERSION }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
