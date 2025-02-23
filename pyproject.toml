@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "event-trader"
-version = "0.1.15"
+version = "0.1.16"
 description = "量化交易-选股策略-自定义参数指标"
 authors = ["sjzsdu <122828837@qq.com>"]
 readme = "README.md"
@@ -19,7 +19,7 @@ pymysql = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.3"
-pyinstaller = {version = "^5.13.0", python = ">=3.10,<3.13"} 
+nuitka = "^1.5.4"
 
 [build-system]
 requires = ["poetry-core"]
@@ -27,3 +27,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
 test = "pytest:main"
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"

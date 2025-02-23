@@ -1,0 +1,52 @@
+name: Build and Release with Nuitka and Poetry
+
+on:
+  push:
+    tags:
+      - "master"  # 只有在推送带有版本号的 tag 时触发
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # 选择运行环境
+
+    steps:
+      # Step 1: 检出仓库代码
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # Step 2: 设置 Python 环境
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"  # 选择你需要的 Python 版本
+
+      # Step 3: 安装 Poetry
+      - name: Install Poetry
+        run: |
+          pip install poetry
+          poetry --version
+
+      # Step 4: 使用 Poetry 安装项目依赖
+      - name: Install dependencies
+        run: |
+          poetry install --no-dev  # 只安装生产环境依赖
+
+      # Step 5: 使用 Poetry 执行打包命令
+      - name: Build with Nuitka
+        run: |
+          poetry run python -m nuitka --standalone --onefile event_trader/main.py
+        # --standalone：生成独立的可执行文件
+        # --onefile：将所有内容打包到一个文件中
+
+      # Step 6: 配置 Git（设置用户名和邮箱）
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      # Step 7: 创建 Release
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "main.bin"  # 这是打包后的可执行文件
+          token: ${{ secrets.GITHUB_TOKEN }}  # 使用 GitHub Token 发布
