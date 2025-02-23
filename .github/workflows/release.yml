@@ -1,6 +1,7 @@
 name: Build and Release with Nuitka and Poetry
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "master"  # 只有在推送带有版本号的 tag 时触发
