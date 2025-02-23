@@ -1,7 +1,10 @@
 name: Build and Release with Nuitka and Poetry
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"  # 只有当推送的 Tag 符合 `v*.*.*` 格式时，才会触发工作流
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   build:
@@ -21,13 +24,14 @@ jobs:
       # Step 3: 安装 Poetry
       - name: Install Poetry
         run: |
+          pip install --upgrade pip
           pip install poetry
           poetry --version
 
       # Step 4: 使用 Poetry 安装项目依赖
       - name: Install dependencies
         run: |
-          poetry install
+          poetry install --no-dev
 
       # Step 5: 使用 Poetry 执行打包命令
       - name: Build with Nuitka
