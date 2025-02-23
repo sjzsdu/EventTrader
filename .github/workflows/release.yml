@@ -2,9 +2,6 @@ name: Build and Release with Nuitka and Poetry
 
 on:
   workflow_dispatch:
-  push:
-    tags:
-      - "master"  # 只有在推送带有版本号的 tag 时触发
 
 jobs:
   build:
@@ -35,9 +32,7 @@ jobs:
       # Step 5: 使用 Poetry 执行打包命令
       - name: Build with Nuitka
         run: |
-          poetry run python -m nuitka --standalone --onefile event_trader/main.py
-        # --standalone：生成独立的可执行文件
-        # --onefile：将所有内容打包到一个文件中
+          poetry run python -m nuitka --standalone --onefile main.py
 
       # Step 6: 配置 Git（设置用户名和邮箱）
       - name: Configure Git
