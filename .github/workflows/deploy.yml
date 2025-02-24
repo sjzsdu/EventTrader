@@ -1,9 +1,10 @@
-name: Publish Python Package
+name: Publish event_trader Package
 
 on:
   push:
-    branches:
-      - master  # 选择你要在推送时触发的分支
+    tags:
+      - "v*.*.*"  # 只有当推送的 Tag 符合 `v*.*.*` 格式时，才会触发工作流
+  workflow_dispatch:  # 允许手动触发
 
 jobs:
   publish-python-package:
