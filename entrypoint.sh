@@ -2,6 +2,7 @@
 
 # 检查 LOOP_INTERVAL 是否设置，如果没有设置，默认为 10 分钟
 INTERVAL=${LOOP_INTERVAL:-10}
+VENV_PATH="./venv"
 
 # 定义一个函数来检查 Python 版本
 check_python_version() {
@@ -23,11 +24,28 @@ check_python_version() {
     exit 1
 }
 
+# 创建并激活虚拟环境
+create_and_activate_venv() {
+    echo "Creating virtual environment..."
+    $PYTHON_CMD -m venv $VENV_PATH
+    if [ $? -ne 0 ]; then
+        echo "Failed to create virtual environment." >&2
+        exit 1
+    fi
+    
+    echo "Activating virtual environment..."
+    . $VENV_PATH/bin/activate
+    if [ $? -ne 0 ]; then
+        echo "Failed to activate virtual environment." >&2
+        exit 1
+    fi
+}
+
 # 检查并安装 Poetry
 check_and_install_poetry() {
     if ! command -v poetry >/dev/null 2>&1; then
         echo "Poetry not found. Installing Poetry..."
-        curl -sSL https://install.python-poetry.org | $PYTHON_CMD -
+        curl -sSL https://install.python-poetry.org | python -
     fi
     
     if ! command -v poetry >/dev/null 2>&1; then
@@ -49,6 +67,9 @@ install_dependencies() {
 # 获取合适的 Python 命令
 PYTHON_CMD=$(check_python_version)
 
+# 创建并激活虚拟环境
+create_and_activate_venv
+
 # 检查并安装 Poetry
 check_and_install_poetry
 
@@ -57,7 +78,7 @@ install_dependencies
 
 while true; do
     echo "Running main.py with --allindex"
-    poetry run $PYTHON_CMD main.py start --allindex
+    poetry run python main.py start --allindex
     echo "Waiting for $INTERVAL minutes before next execution"
     sleep $(( INTERVAL * 60 ))
 done
